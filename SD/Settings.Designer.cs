@@ -46,12 +46,15 @@
             this.lblPathPutty = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.folderBD = new System.Windows.Forms.FolderBrowserDialog();
+            this.btnPathWinScp = new System.Windows.Forms.Button();
+            this.txbPathWinSCP = new System.Windows.Forms.TextBox();
+            this.lblPathWinSCP = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // chbAutoUpdate
             // 
             this.chbAutoUpdate.AutoSize = true;
-            this.chbAutoUpdate.Location = new System.Drawing.Point(23, 216);
+            this.chbAutoUpdate.Location = new System.Drawing.Point(23, 256);
             this.chbAutoUpdate.Name = "chbAutoUpdate";
             this.chbAutoUpdate.Size = new System.Drawing.Size(210, 17);
             this.chbAutoUpdate.TabIndex = 42;
@@ -67,6 +70,7 @@
             this.btnPathUvnc.TabIndex = 40;
             this.btnPathUvnc.Text = "...";
             this.btnPathUvnc.UseVisualStyleBackColor = true;
+            this.btnPathUvnc.Click += new System.EventHandler(this.btnPathUvnc_Click);
             // 
             // btnPathRms
             // 
@@ -77,11 +81,12 @@
             this.btnPathRms.TabIndex = 41;
             this.btnPathRms.Text = "...";
             this.btnPathRms.UseVisualStyleBackColor = true;
+            this.btnPathRms.Click += new System.EventHandler(this.btnPathRms_Click);
             // 
             // txbUpHost
             // 
             this.txbUpHost.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txbUpHost.Location = new System.Drawing.Point(23, 149);
+            this.txbUpHost.Location = new System.Drawing.Point(23, 189);
             this.txbUpHost.Name = "txbUpHost";
             this.txbUpHost.Size = new System.Drawing.Size(330, 21);
             this.txbUpHost.TabIndex = 36;
@@ -89,7 +94,7 @@
             // txbPathUpdate
             // 
             this.txbPathUpdate.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.txbPathUpdate.Location = new System.Drawing.Point(23, 189);
+            this.txbPathUpdate.Location = new System.Drawing.Point(23, 229);
             this.txbPathUpdate.Name = "txbPathUpdate";
             this.txbPathUpdate.Size = new System.Drawing.Size(330, 21);
             this.txbPathUpdate.TabIndex = 37;
@@ -113,7 +118,7 @@
             // lblUpHost
             // 
             this.lblUpHost.AutoSize = true;
-            this.lblUpHost.Location = new System.Drawing.Point(23, 133);
+            this.lblUpHost.Location = new System.Drawing.Point(23, 173);
             this.lblUpHost.Name = "lblUpHost";
             this.lblUpHost.Size = new System.Drawing.Size(117, 13);
             this.lblUpHost.TabIndex = 32;
@@ -131,7 +136,7 @@
             // lblPathUpdate
             // 
             this.lblPathUpdate.AutoSize = true;
-            this.lblPathUpdate.Location = new System.Drawing.Point(23, 173);
+            this.lblPathUpdate.Location = new System.Drawing.Point(23, 213);
             this.lblPathUpdate.Name = "lblPathUpdate";
             this.lblPathUpdate.Size = new System.Drawing.Size(118, 13);
             this.lblPathUpdate.TabIndex = 34;
@@ -148,21 +153,24 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(234, 247);
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Location = new System.Drawing.Point(234, 287);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 30;
             this.btnCancel.Text = "Отмена";
             this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(315, 247);
+            this.btnOK.Location = new System.Drawing.Point(315, 287);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 31;
             this.btnOK.Text = "OK";
             this.btnOK.UseVisualStyleBackColor = true;
+            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // btnPathPutty
             // 
@@ -173,6 +181,7 @@
             this.btnPathPutty.TabIndex = 29;
             this.btnPathPutty.Text = "...";
             this.btnPathPutty.UseVisualStyleBackColor = true;
+            this.btnPathPutty.Click += new System.EventHandler(this.btnPathPutty_Click);
             // 
             // txbPathPutty
             // 
@@ -195,11 +204,43 @@
             // 
             this.openFileDialog.FileName = "openFileDialog1";
             // 
+            // btnPathWinScp
+            // 
+            this.btnPathWinScp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnPathWinScp.Location = new System.Drawing.Point(362, 149);
+            this.btnPathWinScp.Name = "btnPathWinScp";
+            this.btnPathWinScp.Size = new System.Drawing.Size(29, 23);
+            this.btnPathWinScp.TabIndex = 45;
+            this.btnPathWinScp.Text = "...";
+            this.btnPathWinScp.UseVisualStyleBackColor = true;
+            this.btnPathWinScp.Click += new System.EventHandler(this.btnPathWinScp_Click);
+            // 
+            // txbPathWinSCP
+            // 
+            this.txbPathWinSCP.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.txbPathWinSCP.Location = new System.Drawing.Point(24, 149);
+            this.txbPathWinSCP.Name = "txbPathWinSCP";
+            this.txbPathWinSCP.Size = new System.Drawing.Size(330, 21);
+            this.txbPathWinSCP.TabIndex = 44;
+            // 
+            // lblPathWinSCP
+            // 
+            this.lblPathWinSCP.AutoSize = true;
+            this.lblPathWinSCP.Location = new System.Drawing.Point(24, 133);
+            this.lblPathWinSCP.Name = "lblPathWinSCP";
+            this.lblPathWinSCP.Size = new System.Drawing.Size(83, 13);
+            this.lblPathWinSCP.TabIndex = 43;
+            this.lblPathWinSCP.Text = "Путь к WinSCP";
+            // 
             // Settings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(403, 282);
+            this.CancelButton = this.btnCancel;
+            this.ClientSize = new System.Drawing.Size(403, 315);
+            this.Controls.Add(this.btnPathWinScp);
+            this.Controls.Add(this.txbPathWinSCP);
+            this.Controls.Add(this.lblPathWinSCP);
             this.Controls.Add(this.chbAutoUpdate);
             this.Controls.Add(this.btnPathUvnc);
             this.Controls.Add(this.btnPathRms);
@@ -216,8 +257,12 @@
             this.Controls.Add(this.btnPathPutty);
             this.Controls.Add(this.txbPathPutty);
             this.Controls.Add(this.lblPathPutty);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Settings";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Settings";
+            this.Load += new System.EventHandler(this.Settings_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -243,5 +288,8 @@
         private System.Windows.Forms.Label lblPathPutty;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.FolderBrowserDialog folderBD;
+        private System.Windows.Forms.Button btnPathWinScp;
+        private System.Windows.Forms.TextBox txbPathWinSCP;
+        private System.Windows.Forms.Label lblPathWinSCP;
     }
 }

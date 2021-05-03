@@ -1,26 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Data.OleDb;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.Diagnostics;
-using System.IO;
-using OfficeOpenXml;
-using System.Globalization;
-using System.Net;
-using System.Xml;
-using System.Net.NetworkInformation;
+﻿using JRO;
 using Microsoft.Win32;
+using System;
+using System.Data;
+using System.Data.OleDb;
+using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
-using JRO;
-using ADODB;
-using System.Data.SqlClient;
+using System.Text;
+using System.Windows.Forms;
+using System.Xml;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace SD
 {
@@ -31,30 +25,31 @@ namespace SD
             InitializeComponent();
             SetRights();
             ReadConfig();
-            //LoadAnswers();
-            //LoadDecision();
+            LoadAnswers();
+            LoadDecision();
             LoadUseful();
             InputLanguage.CurrentInputLanguage = InputLanguage.FromCulture(new CultureInfo("ru-RU"));
             GetAutoUpdate();
-            //FillDatabase();
-            LoadComboBox();
-            SetTopMostForm();
+            //LoadComboBox();
+            SetTopMostForm();            
         }
 
         //Переменные
         string line;
         int prbarCount = 0;
         bool autoupdate;
-        string pathUpdate, pathPutty, pathRms, pathUvnc, upHost, pathWinscp, subnetIp;
+        string pathUpdate, pathPutty, pathRms, pathUvnc, upHost, pathWinscp, subnetIp, pathSqlFile;
         bool update = false;
         bool topMostForm;
-        int[] SrvArr = new int[13] { 1, 2, 3, 5, 6, 7, 18, 250, 253, 254, 87, 93, 141 };
+        int[] SrvArr = new int[12] { 1, 2, 3, 5, 6, 7, 18, 250, 253, 254, 93, 141 };
         int[] IpmiArr = new int[7] { 217, 218, 12, 13, 14, 15, 16 };
 
         string[] subnetItems;
         Color[] colors = { Color.White, Color.Black };
 
         DataSet dsHm = new DataSet();
+        DataSet dsMm = new DataSet();
+
 
         public void SetRights()
         {
@@ -64,6 +59,7 @@ namespace SD
             //foreach (Control control in this.Controls)
             //    if (control is Button)
             //        control.ForeColor = control.Enabled == true ? Color.Cyan : Color.Gray;
+
         }
 
         public void InsertDataToDB()
@@ -111,7 +107,7 @@ namespace SD
 
         public void ReadConfig()
         {
-            StreamReader str = new StreamReader("config", Encoding.Default);
+            StreamReader str = new StreamReader("config", Encoding.UTF8);
 
             while (!str.EndOfStream)
             {
@@ -157,6 +153,11 @@ namespace SD
                 {
                     string[] i = cline.Split('|');
                     pathWinscp = i[1];
+                }
+                if (cline.StartsWith("sqlfile"))
+                {
+                    string[] i = cline.Split('|');
+                    Constants.SqlFile = i[1];
                 }
             }
 
@@ -230,7 +231,7 @@ namespace SD
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ошибка обновления БД");
+                MessageBox.Show(ex.Message, "Не доступен ресурс с со списком ГМ");
                 return;
             }
         }
@@ -238,35 +239,45 @@ namespace SD
         public void GetAutoUpdate()
         {
             if (autoupdate)
+            {
+                if (File.Exists("DB_back.mdb")) File.Delete("DB_back.mdb");
+                File.Copy("DB.mdb", "DB_back.mdb");
+                if (File.Exists("all_reports_back.xls")) File.Delete("all_reports_back.xls");
+                File.Copy("all_reports.xls", "all_reports_back.xls");
+
                 CreatDbGM();
+                if (GetFileForDb())
+                {
+                    FillDatabase();
+
+                    cbCodeGM.DataSource = null;
+                    cbNameGM.DataSource = null;
+                    cbIpGM.DataSource = null;
+                    cbNameMM.DataSource = null;
+                    cbCodeMM.DataSource = null;
+
+                    cbNameGM.Items.Clear();
+                    cbCodeGM.Items.Clear();
+                    cbIpGM.Items.Clear();
+                    cbNameMM.Items.Clear();
+                    cbCodeMM.Items.Clear();
+
+                    LoadComboBox();
+                    MessageBox.Show("БД обновлена", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                MessageBox.Show("Не удалось обновить БД", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }                
         }
 
         public void LoadComboBox()
-        {
-            ////992320	Абинск 1 Колхозная	10.2.68.1	 Новороссийск	2.1.6.2.1	21.62.1	000	+0	1	1	17.09.2010	открыт	присутствует
-            //progressBar.Value = 0;
-            //progressBar.Maximum = prbarCount;
-            //progressBar.Step = 1;
-            //int countGM = 0, openGM = 0;
-            //StreamReader file = new StreamReader("db.txt");
-            //while ((line = file.ReadLine()) != null)
-            //{
-            //    string[] array = line.Split('\t');
-            //    cbNameGM.Items.Add(array[1]);
-            //    cbCodeGM.Items.Add(array[0]);
-            //    cbIpGM.Items.Add(array[2]);
-            //    countGM++;
-            //    if (array[11] == "принят")
-            //        openGM++;
-            //    progressBar.PerformStep();
-            //}
-            //file.Close();
-            ////txbAllGM.Text = "Всего ГМ:  " + countGM.ToString() + " Принято:  " + openGM;
-            
+        {            
             OleDbConnection connection = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=DB.mdb;Jet OLEDB:Database Password=parolDlya_BD;");
             connection.Open();
-            OleDbDataAdapter ole_adapter = new OleDbDataAdapter("SELECT * FROM HM", connection);
-            ole_adapter.Fill(dsHm);
+            //Заполняем combobox'ы на вкладке "ГМ"
+            OleDbDataAdapter ole_adapterHM = new OleDbDataAdapter("SELECT * FROM HM", connection);
+            ole_adapterHM.Fill(dsHm);
+
 
             cbCodeGM.DataSource = dsHm.Tables[0];
             cbCodeGM.DisplayMember = "code";
@@ -280,192 +291,460 @@ namespace SD
             cbIpGM.DisplayMember = "ip_hm";
             cbIpGM.ValueMember = "ip_hm";
 
-            cbCodeGM.SelectedIndex = -1;
-            cbNameGM.SelectedIndex = -1;
-            cbIpGM.SelectedIndex = -1;
+
+            //Заполняем combobox'ы на вкладке ММ/МК
+            OleDbDataAdapter ole_adapterMM = new OleDbDataAdapter("SELECT * FROM MD_MK", connection);
+            ole_adapterMM.Fill(dsMm);
+
+            cbNameMM.DataSource = dsMm.Tables[0];
+            cbNameMM.DisplayMember = "mm_name";
+            cbNameMM.ValueMember = "mm_name";
+
+            cbCodeMM.DataSource = dsMm.Tables[0];
+            cbCodeMM.DisplayMember = "code";
+            cbCodeMM.ValueMember = "code";
 
             connection.Close();
         }
 
-        public void GetLineAndFillBoxes(string param)
+        public void FillAllFieldsHM(string param)
         {
-            //StreamReader file = new StreamReader("db.txt");
-            //while ((line = file.ReadLine()) != null)
-            //{
+            DataTable dtHm = dsHm.Tables[0];
+            foreach (DataRow row in dtHm.Rows)
+            {
+                var items = row.ItemArray;
+                if (param == "name")
+                {
+                    if (items[2].ToString() == cbNameGM.SelectedValue.ToString())
+                    {
+                        if (items[6].ToString() != "") txbDateOpen.Text = items[6].ToString().Remove(items[6].ToString().Length - 8, 8);
+                        txbFilial.Text = items[5].ToString();
+                        txbTimeGM.Text = items[9].ToString();
+                        lblStatusGM.Text = items[3].ToString();
+                        FillIp(items[8].ToString());
 
-            //    if (param == "name")
-            //    {
-            //        if (line.Contains(cbNameGM.Items[cbNameGM.SelectedIndex].ToString()))
-            //            FillExceptNameGM();
-            //    }
-            //    if (param == "code")
-            //    {
-            //        if (line.Contains(cbCodeGM.Items[cbCodeGM.SelectedIndex].ToString()))
-            //            FillExceptCodeGM();
-            //    }
-            //    if (param == "ip")
-            //    {
-            //        if (line.Contains(cbIpGM.Items[cbIpGM.SelectedIndex].ToString()))
-            //            FillExceptIpGM();
-            //    }
-            //}
-            //file.Close();
+                        cbIpScalesStart.Items.Clear();
+                        if (items[8].ToString() != "")
+                        {
+                            string[] arrip = items[8].ToString().Split('.');
+                            string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
+                            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
+                            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
+                            cbIpScalesStart.SelectedIndex = 0;
 
-            //FillIp();
-            //progressBar.Value = 0;
-            //cbNameGM.SelectionLength = 0;
-            //cbNameGM.SelectionStart = cbNameGM.Text.Length;
+                            subnetItems = cbIpScalesStart.Items.Cast<string>().ToArray();
+                            subnetIp = arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.';
+                        }
+                        
+
+                        for (int i = 0; i < SrvArr.Length; i++)
+                        {
+                            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + SrvArr[i].ToString()] as Label;
+                            lbl.BackColor = Color.WhiteSmoke;
+                        }
+
+                        for (int i = 0; i < IpmiArr.Length; i++)
+                        {
+                            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + IpmiArr[i].ToString()] as Label;
+                            lbl.BackColor = Color.WhiteSmoke;
+                        }
+
+                        btnScalesPing.BackColor = Color.WhiteSmoke;
+                        btnScalesPing.ForeColor = Color.Black;
+                        btnRmsSshPing.BackColor = Color.WhiteSmoke;
+                        btnRmsSshPing.ForeColor = Color.Black;
+
+                        txbIpScalesEnd.ForeColor = Color.Black;
+                        txbIpScalesEnd.BackColor = Color.White;
+
+                        progressBar.Value = 0;
+                        cbNameGM.SelectionLength = 0;
+                        cbNameGM.SelectionStart = cbNameGM.Text.Length;
+
+                        return;
+                    }
+                }
+                if (param == "code")
+                {
+                    if (items[1].ToString() == cbCodeGM.SelectedValue.ToString())
+                    {
+                        int start = items[6].ToString().Length - 8;
+                        int count = 8;
+                        txbDateOpen.Text = items[6].ToString().Remove(start, count);
+                        txbFilial.Text = items[5].ToString();
+                        txbTimeGM.Text = items[9].ToString();
+                        lblStatusGM.Text = items[3].ToString();
+                        FillIp(items[8].ToString());
+
+                        cbIpScalesStart.Items.Clear();
+                        string[] arrip = items[8].ToString().Split('.');
+                        string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
+                        cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
+                        cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
+                        cbIpScalesStart.SelectedIndex = 0;
+
+                        subnetItems = cbIpScalesStart.Items.Cast<string>().ToArray();
+                        subnetIp = arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.';
+
+                        for (int i = 0; i < SrvArr.Length; i++)
+                        {
+                            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + SrvArr[i].ToString()] as Label;
+                            lbl.BackColor = Color.WhiteSmoke;
+                        }
+
+                        for (int i = 0; i < IpmiArr.Length; i++)
+                        {
+                            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + IpmiArr[i].ToString()] as Label;
+                            lbl.BackColor = Color.WhiteSmoke;
+                        }
+
+                        btnScalesPing.BackColor = Color.WhiteSmoke;
+                        btnScalesPing.ForeColor = Color.Black;
+                        btnRmsSshPing.BackColor = Color.WhiteSmoke;
+                        btnRmsSshPing.ForeColor = Color.Black;
+
+                        txbIpScalesEnd.ForeColor = Color.Black;
+                        txbIpScalesEnd.BackColor = Color.White;
+
+                        progressBar.Value = 0;
+                        cbNameGM.SelectionLength = 0;
+                        cbNameGM.SelectionStart = cbNameGM.Text.Length;
+
+                        return;
+                    }
+                }
+                if (param == "ip")
+                {
+                    if (items[8].ToString() == cbIpGM.SelectedValue.ToString())
+                    {
+                        int start = items[6].ToString().Length - 8;
+                        int count = 8;
+                        txbDateOpen.Text = items[6].ToString().Remove(start, count);
+                        txbFilial.Text = items[5].ToString();
+                        txbTimeGM.Text = items[9].ToString();
+                        lblStatusGM.Text = items[3].ToString();
+                        FillIp(items[8].ToString());
+
+                        cbIpScalesStart.Items.Clear();
+                        string[] arrip = items[8].ToString().Split('.');
+                        string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
+                        cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
+                        cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
+                        cbIpScalesStart.SelectedIndex = 0;
+
+                        subnetItems = cbIpScalesStart.Items.Cast<string>().ToArray();
+                        subnetIp = arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.';
+
+                        for (int i = 0; i < SrvArr.Length; i++)
+                        {
+                            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + SrvArr[i].ToString()] as Label;
+                            lbl.BackColor = Color.WhiteSmoke;
+                        }
+
+                        for (int i = 0; i < IpmiArr.Length; i++)
+                        {
+                            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + IpmiArr[i].ToString()] as Label;
+                            lbl.BackColor = Color.WhiteSmoke;
+                        }
+
+                        btnScalesPing.BackColor = Color.WhiteSmoke;
+                        btnScalesPing.ForeColor = Color.Black;
+                        btnRmsSshPing.BackColor = Color.WhiteSmoke;
+                        btnRmsSshPing.ForeColor = Color.Black;
+
+                        txbIpScalesEnd.ForeColor = Color.Black;
+                        txbIpScalesEnd.BackColor = Color.White;
+
+                        progressBar.Value = 0;
+                        cbNameGM.SelectionLength = 0;
+                        cbNameGM.SelectionStart = cbNameGM.Text.Length;
+
+                        return;
+                    }
+                }
+
+            }            
         }
 
-        public void FillExceptNameGM()
+        public void FillAllFieldsMM(string param)
         {
-            //997424  Белорецк 1 Гафури(а)   10.3.16.1    Магнитогорск   2.1.5.7 21.57   21.57 + 2  1   1   31.10.2014  открыт присутствует
-            string[] array = line.Split('\t');
-            subnetIp = array[2];
+            txbRmsPass1.Text = "";
+            txbRmsPass2.Text = "";
+            txbRmsPass3.Text = "";
+            txbDbPass.Text = "";
+            txbIbmdPass.Text = "";
+            txbMailPass.Text = "";
 
-            //вырезаем первые 3 октета IP
-            string[] arrip = array[2].Split('.');
-            //txbIpScalesStart.Text = "";
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    txbIpScalesStart.Text += arrip[i] + '.';
-            //}
-            cbIpScalesStart.Items.Clear();
-            string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
-            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
-            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
-            cbIpScalesStart.SelectedIndex = 0;
+            lblMainChanelMM.BackColor = Color.WhiteSmoke;
+            lblReserveChanelMM.BackColor = Color.WhiteSmoke;
+            btnPingMM.BackColor = Color.WhiteSmoke;
+            lblMainChanelMM.Text = "";
+            lblReserveChanelMM.Text = "";
+            lblMainChanelMM.Tag = "";
+            lblReserveChanelMM.Tag = "";
 
-            subnetItems = cbIpScalesStart.Items.Cast<string>().ToArray();
+            btnPingMM.Tag = "";
+            tsbtnRmsMM.Tag = "";
+            tsbtnSshMM.Tag = "";
+            tsbtnWinscpMM.Tag = "";
 
-            txbFilial.Text = array[3];
-            txbDateOpen.Text = array[10];
-            txbTimeGM.Text = array[7];
+            cbNameMM.SelectionLength = 0;
+            cbNameMM.SelectionStart = cbNameMM.Text.Length;
 
-            cbCodeGM.SelectedIndex = cbCodeGM.FindString(array[0]);
-            cbIpGM.SelectedIndex = cbIpGM.FindString(array[2]);
 
-            if (array[11] == "принят")
-                lblStatusGM.Text = "";
-            else
+            DataTable dtMm = dsMm.Tables[0];
+            foreach (DataRow row in dtMm.Rows)
             {
-                lblStatusGM.Text = array[11];
-                lblStatusGM.BackColor = Color.Red;
-            }
+                var items = row.ItemArray;
+                if (param == "name")
+                {
+                    if (items[2].ToString() == cbNameMM.SelectedValue.ToString())
+                    {
+                        if (items[6].ToString() != "") txbDateOpenMM.Text = items[6].ToString().Remove(items[6].ToString().Length - 8, 8);
+                        else txbDateOpenMM.Text = "";
+                        if (items[7].ToString() != "") txbDateCloseMM.Text = items[7].ToString().Remove(items[7].ToString().Length - 8, 8);
+                        else txbDateCloseMM.Text = "";
+                        txbFilialMM.Text = items[5].ToString();
+                        //txbTimeMM.Text = items[8].ToString();
+                        tslblStatusMM.Text = items[3].ToString();
+                        tslblTypeTO.Text = items[4].ToString();
+                        string codeMM = items[1].ToString();
+                        if (codeMM.Length < 6)
+                        {
+                            for(int i = 0; i < 6 - codeMM.Length; i++)
+                            {
+                                codeMM = "0" + codeMM;
+                            }
+                        }
+                        if (items[4].ToString() == "МД")
+                        {
+                            btnPingMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblMainChanelMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblReserveChanelMM.Tag = "OMD_" + codeMM + "_1.ONLINEMM.CORP.TANDER.RU";
+                            tsbtnRmsMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnSshMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnWinscpMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                        }
+                        else if (items[4].ToString() == "МК")
+                        {
+                            btnPingMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblMainChanelMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblReserveChanelMM.Tag = "OMK_" + codeMM + "_1.ONLINEMM.CORP.TANDER.RU";
+                            tsbtnRmsMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnSshMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnWinscpMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                        }
+                        
 
-        }
+                        //Получаем пароли
+                        OleDbConnection connection = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=DB.mdb;Jet OLEDB:Database Password=parolDlya_BD;");
+                        string query = "SELECT * FROM PASS_MD_MK WHERE filial = @filial";
+                        OleDbCommand command = new OleDbCommand(query, connection);
+                        command.Parameters.AddWithValue("@filial", items[5].ToString());
+                        connection.Open();
+                        OleDbDataReader SelectReader = command.ExecuteReader();
 
-        public void FillExceptCodeGM()
-        {
-            string[] array = line.Split('\t');
-            subnetIp = array[2];
-            //вырезаем первые 3 октета IP
-            string[] arrip = array[2].Split('.');
-            //txbIpScalesStart.Text = "";
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    txbIpScalesStart.Text += arrip[i] + '.';
-            //}
-            cbIpScalesStart.Items.Clear();
-            string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
-            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
-            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
-            cbIpScalesStart.SelectedIndex = 0;
+                        while (SelectReader.Read())
+                        {
+                            //login = (dr["Название"]);
+                            txbRmsPass1.Text = (SelectReader["rms_1"]).ToString();
+                            txbRmsPass2.Text = (SelectReader["rms_2"]).ToString();
+                            txbRmsPass3.Text = (SelectReader["rms_3"]).ToString();
+                            txbDbPass.Text = (SelectReader["dbase"]).ToString();
+                            txbIbmdPass.Text = (SelectReader["server"]).ToString();
+                            txbMailPass.Text = (SelectReader["mail"]).ToString();
+                        }
 
-            txbFilial.Text = array[3];
-            txbDateOpen.Text = array[10];
-            txbTimeGM.Text = array[7];
+                        SelectReader.Close();
+                        connection.Close();
 
-            cbNameGM.SelectedIndex = cbNameGM.FindString(array[1]);
-            cbIpGM.SelectedIndex = cbIpGM.FindString(array[2]);
+                        return;
+                    }
+                }
+                if (param == "code")
+                {
+                    if (items[1].ToString() == cbCodeMM.SelectedValue.ToString())
+                    {
+                        if (items[6].ToString() != "") txbDateOpenMM.Text = items[6].ToString().Remove(items[6].ToString().Length - 8, 8);
+                        else txbDateOpenMM.Text = "";
+                        if (items[7].ToString() != "") txbDateCloseMM.Text = items[7].ToString().Remove(items[7].ToString().Length - 8, 8);
+                        else txbDateCloseMM.Text = "";
+                        txbFilialMM.Text = items[5].ToString();
+                        //txbTimeMM.Text = items[8].ToString();
+                        tslblStatusMM.Text = items[3].ToString();
+                        tslblTypeTO.Text = items[4].ToString();
+                        string codeMM = items[1].ToString();
+                        if (codeMM.Length < 6)
+                        {
+                            for (int i = 0; i < 6 - codeMM.Length; i++)
+                            {
+                                codeMM = "0" + codeMM;
+                            }
+                        }
 
-            if (array[11] == "принят")
-                lblStatusGM.Text = "";
-            else
-            {
-                lblStatusGM.Text = array[11];
-                lblStatusGM.BackColor = Color.Red;
-            }
-        }
+                        if (items[4].ToString() == "МД")
+                        {
+                            btnPingMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblMainChanelMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblReserveChanelMM.Tag = "OMD_" + codeMM + "_1.ONLINEMM.CORP.TANDER.RU";
+                            tsbtnRmsMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnSshMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnWinscpMM.Tag = "OMD_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                        }
+                        else if (items[4].ToString() == "МК")
+                        {
+                            btnPingMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblMainChanelMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            lblReserveChanelMM.Tag = "OMK_" + codeMM + "_1.ONLINEMM.CORP.TANDER.RU";
+                            tsbtnRmsMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnSshMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                            tsbtnWinscpMM.Tag = "OMK_" + codeMM + ".ONLINEMM.CORP.TANDER.RU";
+                        }
 
-        public void FillExceptIpGM()
-        {
-            //992304	Краснодар 3 Солнечная	10.2.120.1	Краснодар	2.1.3.0	21.30	21.30	+0	1	1	12.11.2008
-            string[] array = line.Split('\t');
-            subnetIp = array[2];
-            //вырезаем первые 3 октета IP
-            string[] arrip = array[2].Split('.');
-            //txbIpScalesStart.Text = "";
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    txbIpScalesStart.Text += arrip[i] + '.';
-            //}
+                        //Получаем пароли
+                        OleDbConnection connection = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=DB.mdb;Jet OLEDB:Database Password=parolDlya_BD;");
+                        string query = "SELECT * FROM PASS_MD_MK WHERE filial = @filial";
+                        OleDbCommand command = new OleDbCommand(query, connection);
+                        command.Parameters.AddWithValue("@filial", items[5].ToString());
+                        connection.Open();
+                        OleDbDataReader SelectReader = command.ExecuteReader();
 
-            cbIpScalesStart.Items.Clear();
-            string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
-            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
-            cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
-            cbIpScalesStart.SelectedIndex = 0;
+                        while (SelectReader.Read())
+                        {
+                            //login = (dr["Название"]);
+                            txbRmsPass1.Text = (SelectReader["rms_1"]).ToString();
+                            txbRmsPass2.Text = (SelectReader["rms_2"]).ToString();
+                            txbRmsPass3.Text = (SelectReader["rms_3"]).ToString();
+                            txbDbPass.Text = (SelectReader["dbase"]).ToString();
+                            txbIbmdPass.Text = (SelectReader["server"]).ToString();
+                            txbMailPass.Text = (SelectReader["mail"]).ToString();
+                        }
 
-            txbFilial.Text = array[3];
-            txbDateOpen.Text = array[10];
-            txbTimeGM.Text = array[7];
+                        SelectReader.Close();
+                        connection.Close();
 
-            cbNameGM.SelectedIndex = cbNameGM.FindString(array[1]);
-            cbCodeGM.SelectedIndex = cbCodeGM.FindString(array[0]);
-
-            if (array[11] == "принят")
-                lblStatusGM.Text = "";
-            else
-            {
-                lblStatusGM.Text = array[11];
-                lblStatusGM.BackColor = Color.Red;
+                        return;
+                    }
+                }
             }
         }
 
         private void FillIp(string ipHm)
         {
-            txbRobotPass.Text = "";
-            txbRobotName.Text = "";
+            if (ipHm != "")
+            {
+                txbRobotPass.Text = "";
+                txbRobotName.Text = "";
 
-            string[] arrip = ipHm.Split('.');
+                string[] arrip = ipHm.Split('.');
 
-            int bit = Convert.ToInt16(arrip[2]) + 1;
-            string ip = arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.';
-            string ipplus = arrip[0] + '.' + arrip[1] + '.' + bit.ToString() + '.';
+                int bit = Convert.ToInt16(arrip[2]) + 1;
+                string ip = arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.';
+                string ipplus = arrip[0] + '.' + arrip[1] + '.' + bit.ToString() + '.';
 
-            toolSshIbgm.Tag = ip + "1";
-            toolWinscpIbgm.Tag = ip + "1";
-            toolSshIbgmBack.Tag = ip + "2";
-            toolWinscpIbgmBack.Tag = ip + "2";
-            toolRmsTerm.Tag = ip + "3";
-            toolRdpTerm.Tag = ip + "3";
-            toolSshZope.Tag = ip + "5";
-            toolWinscpZope.Tag = ip + "5";
-            toolRmsWinBack.Tag = ip + "6";
-            toolRdpWinBack.Tag = ip + "6";
-            toolSshDp.Tag = ip + "18";
-            toolRmsUtm.Tag = ipplus + "93";
-            toolRmsScala.Tag = ipplus + "87";
+                toolSshIbgm.Tag = ip + "1";
+                toolWinscpIbgm.Tag = ip + "1";
+                toolSshIbgmBack.Tag = ip + "2";
+                toolWinscpIbgmBack.Tag = ip + "2";
+                toolRmsTerm.Tag = ip + "3";
+                toolRdpTerm.Tag = ip + "3";
+                toolSshZope.Tag = ip + "5";
+                toolWinscpZope.Tag = ip + "5";
+                toolRmsWinBack.Tag = ip + "6";
+                toolRdpWinBack.Tag = ip + "6";
+                toolSshWifi.Tag = ip + "7";
+                toolSshDp.Tag = ip + "18";
+                toolRmsUtm.Tag = ipplus + "93";
+                toolRmsScala.Tag = ipplus + "87";
 
-            toolIpmiIbgm.Tag = ip + "217";
-            toolIpmiIbgmBack.Tag = ip + "218";
-            toolIpmiZope.Tag = ip + "15";
-            toolIpmiTerm.Tag = ip + "12";
-            toolIpmiWinBack.Tag = ip + "16";
+                toolIpmiIbgm.Tag = ip + "217";
+                toolIpmiIbgmBack.Tag = ip + "218";
+                toolIpmiZope.Tag = ip + "15";
+                toolIpmiTerm.Tag = ip + "12";
+                toolIpmiWinBack.Tag = ip + "16";
 
-            lblPing1.Tag = ip + "1";
-            lblPing2.Tag = ip + "2";
-            lblPing3.Tag = ip + "3";
-            lblPing5.Tag = ip + "5";
-            lblPing6.Tag = ip + "6";
-            lblPing7.Tag = ip + "7";
-            lblPing18.Tag = ip + "18";
-            lblPing93.Tag = ipplus + "93";
-            lblPing250.Tag = ip + "250";
-            lblPing253.Tag = ip + "253";
-            lblPing141.Tag = ipplus + "141";
-            lblPing254.Tag = ip + "254";
+                lblPing1.Tag = ip + "1";
+                lblPing2.Tag = ip + "2";
+                lblPing3.Tag = ip + "3";
+                lblPing5.Tag = ip + "5";
+                lblPing6.Tag = ip + "6";
+                lblPing7.Tag = ip + "7";
+                lblPing18.Tag = ip + "18";
+                lblPing93.Tag = ipplus + "93";
+                lblPing250.Tag = ip + "250";
+                lblPing253.Tag = ip + "253";
+                lblPing141.Tag = ipplus + "141";
+                lblPing254.Tag = ip + "254";
+
+                lblPing217.Tag = ip + "217";
+                lblPing218.Tag = ip + "218";
+                lblPing12.Tag = ip + "12";
+                lblPing15.Tag = ip + "15";
+                lblPing16.Tag = ip + "16";
+                lblPing13.Tag = ip + "13";
+                lblPing14.Tag = ip + "14";
+
+                menuRMSTerminal.Tag = ip + "3";
+                menuRMSWinBackup.Tag = ip + "6";
+                menuSshIbgm.Tag = ip + "1";
+                menuSshIbgmBackup.Tag = ip + "2";
+                menuSshZope.Tag = ip + "5";
+            }
+            else
+            {
+                txbRobotPass.Text = "";
+                txbRobotName.Text = "";
+
+                toolSshIbgm.Tag = "";
+                toolWinscpIbgm.Tag = "";
+                toolSshIbgmBack.Tag = "";
+                toolWinscpIbgmBack.Tag = "";
+                toolRmsTerm.Tag = "";
+                toolRdpTerm.Tag = "";
+                toolSshZope.Tag = "";
+                toolWinscpZope.Tag = "";
+                toolRmsWinBack.Tag = "";
+                toolRdpWinBack.Tag = "";
+                toolSshWifi.Tag = "";
+                toolSshDp.Tag = "";
+                toolRmsUtm.Tag = "";
+                toolRmsScala.Tag = "";
+
+                toolIpmiIbgm.Tag = "";
+                toolIpmiIbgmBack.Tag = "";
+                toolIpmiZope.Tag = "";
+                toolIpmiTerm.Tag = "";
+                toolIpmiWinBack.Tag = "";
+
+                lblPing1.Tag = "";
+                lblPing2.Tag = "";
+                lblPing3.Tag = "";
+                lblPing5.Tag = "";
+                lblPing6.Tag = "";
+                lblPing7.Tag = "";
+                lblPing18.Tag = "";
+                lblPing93.Tag = "";
+                lblPing250.Tag = "";
+                lblPing253.Tag = "";
+                lblPing141.Tag = "";
+                lblPing254.Tag = "";
+
+                lblPing217.Tag = "";
+                lblPing218.Tag = "";
+                lblPing12.Tag = "";
+                lblPing15.Tag = "";
+                lblPing16.Tag = "";
+                lblPing13.Tag = "";
+                lblPing14.Tag = "";
+
+                cbIpScalesStart.Text = "";
+
+                menuRMSTerminal.Tag = "";
+                menuRMSWinBackup.Tag = "";
+                menuSshIbgm.Tag = "";
+                menuSshIbgmBackup.Tag = "";
+                menuSshZope.Tag = "";
+            }
         }
 
         public bool IsGmSelected()
@@ -473,6 +752,17 @@ namespace SD
             if (cbNameGM.Text == "")
             {
                 MessageBox.Show("ВротМнеТапки! Не позорь мою лысую голову!\nГипер кто за тебя выберет?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false; ;
+            }
+            else
+                return true;
+        }
+
+        public bool IsMmSelected()
+        {
+            if (cbNameMM.Text == "")
+            {
+                MessageBox.Show("ВротМнеТапки! Не позорь мою лысую голову!\nМагаз кто за тебя выберет?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false; ;
             }
             else
@@ -532,14 +822,14 @@ namespace SD
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Ошибка выполнения Ping", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //MessageBox.Show(ex.ToString(), "Ошибка выполнения Ping", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             return (status);
         }
 
         public void PingSrv(string server, string host)
         {
-            Label lbl = tpHM.Controls["gbServersAvailability"].Controls["lblPing" + server] as Label;
+            Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + server] as Label;
             IPStatus status = IPStatus.Unknown;
             try
             {
@@ -550,16 +840,8 @@ namespace SD
                 MessageBox.Show(ex.ToString(), "Ошибка выполнения Ping", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
-            if (status == IPStatus.Success)
-            {
-                //pingstatus = true;
-                lbl.BackColor = Color.Green;
-                lbl.ForeColor = Color.White;
-            }
-            else
-            {
-                lbl.BackColor = Color.Red;
-            }
+            if (status == IPStatus.Success) lbl.BackColor = Color.Green;
+            else lbl.BackColor = Color.Red;
         }
 
         public void PingT(string ip)
@@ -861,7 +1143,7 @@ namespace SD
 
         }
 
-        private void LoadUseful()
+        public void LoadUseful()
         {
             string fileName = "useful.txt";
             if (File.Exists(fileName))
@@ -928,7 +1210,7 @@ namespace SD
             //сжаие базы данных compact MS ACCESS
 
             //object[] oParams;
-            JRO.JetEngine je = new JRO.JetEngine();
+            JetEngine je = new JetEngine();
             //je.CompactDatabase(connectionString, mdwfilename);
             je.CompactDatabase("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + original + ";Jet OLEDB:Database Password=parolDlya_BD;Jet OLEDB:Engine Type=5",
                 "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + copy + ";Jet OLEDB:Database Password=parolDlya_BD;Jet OLEDB:Engine Type=5");
@@ -938,8 +1220,8 @@ namespace SD
         public void FillDatabase()
         {
             //-------------запуск таймера-------------------//
-            Stopwatch sw_total = new Stopwatch();
-            sw_total.Start();
+            //Stopwatch sw_total = new Stopwatch();
+            //sw_total.Start();
 
             //Код Магазин Статус Тип Филиал Код Филиала Дата открытия Дата закрытия Email   Телефон объекта Растояние Центр поддержки Код центра поддержки    ФИО системотехника  Телефон системотехника  Адрес Полный адрес
             //230039  Мишутка Закрыт  МД Краснодар Восток    235800  1998 - 11 - 17 00:00:00 2008 - 03 - 01 00:00:00                     Григорян Андрей Аванесович
@@ -971,6 +1253,16 @@ namespace SD
             //заполняем таблицы из xls
             for (int i = 2; i <= RowsCount; i++)
             {
+                if (i == 2)
+                {
+                    string query = "INSERT INTO MD_MK (code, mm_name, status, type, filial, date_open, date_close) " +
+                                    "VALUES ('-', '-', '-', '-', '-', null, null)";
+                    OleDbCommand command = new OleDbCommand(query, connection);
+
+                    query = "INSERT INTO HM (code, hm_name, status, type, filial, date_open, date_close) " +
+                                    "VALUES ('-', '-', '-', '-', '-', null, null)";
+                    command = new OleDbCommand(query, connection);
+                }
                 if (arrDataList[i, 4].ToString() == "МД" || arrDataList[i, 4].ToString() == "МК")
                 {
                     string query = "INSERT INTO MD_MK (code, mm_name, status, type, filial, date_open, date_close) " +
@@ -979,8 +1271,18 @@ namespace SD
 
                     if (arrDataList[i, 1] != null) 
                     { 
-                        command.Parameters.AddWithValue("@code", arrDataList[i, 1].ToString()); 
-                    }else command.Parameters.AddWithValue("@code", DBNull.Value);
+                        if (arrDataList[i, 1].ToString().Length < 6)
+                        {
+                            string codeMM = arrDataList[i, 1].ToString();
+                            for (int k = 0; k < 6 - arrDataList[i, 1].ToString().Length; k++)
+                            {
+                                codeMM = "0" + codeMM;
+                            }
+                            command.Parameters.AddWithValue("@code", codeMM);
+                        }else command.Parameters.AddWithValue("@code", arrDataList[i, 1].ToString());
+
+                    }
+                    else command.Parameters.AddWithValue("@code", DBNull.Value);
                     if (arrDataList[i, 2] != null)
                     {
                         command.Parameters.AddWithValue("@mm_name", arrDataList[i, 2].ToString());
@@ -1057,7 +1359,7 @@ namespace SD
             }
 
 
-            //заполняем ip и часовой пояс ГМ
+            //заполняем ip и часовой пояс ГМ/MM
             //992320	Абинск 1 Колхозная	10.2.68.1	 Новороссийск	2.1.6.2.1	21.62.1	000	+0	1	1	17.09.2010	открыт	присутствует
             StreamReader file = new StreamReader("db.txt");
             while ((line = file.ReadLine()) != null)
@@ -1075,8 +1377,8 @@ namespace SD
 
             connection.Close();
 
-            sw_total.Stop();
-            MessageBox.Show(sw_total.ElapsedMilliseconds + " ms", "Time");
+            //sw_total.Stop();
+            //MessageBox.Show(sw_total.ElapsedMilliseconds + " ms", "Time");
         }
 
         public void SrvShowHide(string mode)
@@ -1085,25 +1387,216 @@ namespace SD
             else if (mode == "hide") this.Width = 586;
         }
 
+        public void LoadAnswers()
+        {
+            OleDbConnection MyConnection;
+            DataSet DtSet;
+            OleDbDataAdapter MyCommand;
+            MyConnection = new OleDbConnection("Provider = Microsoft.Jet.OLEDB.4.0; Data Source=answers.xls; Extended Properties=\"Excel 8.0;IMEX=1\"");
+            MyCommand = new OleDbDataAdapter("select * from [Ответы$]", MyConnection);
+            DtSet = new DataSet();
+            MyCommand.Fill(DtSet);
+            //dgvAnswers.DataSource = DtSet.Tables[0];
+            DataTable dt = DtSet.Tables[0];
+            int i = 0;
+            foreach (DataRow row in dt.Rows)
+            {
+                var items = row.ItemArray;
+                if (i == 1)
+                {
+                    dgvAnswers.Columns.Add(new DataGridViewTextBoxColumn() { HeaderText = items[0].ToString(), Width = 120 });
+                    dgvAnswers.Columns.Add(new DataGridViewTextBoxColumn() { HeaderText = items[1].ToString(), Width = 300 });
+                    dgvAnswers.Columns.Add(new DataGridViewTextBoxColumn() { HeaderText = items[2].ToString(), Width = 80 });
+                }
+                if (i > 1)
+                {
+                    dgvAnswers.Rows.Add(items);
+                }
+                i++;
+            }
+            MyConnection.Close();
+        }
+
+        public void LoadDecision()
+        {
+            OleDbConnection MyConnection;
+            DataSet DtSet;
+            OleDbDataAdapter MyCommand;
+            MyConnection = new OleDbConnection("Provider = Microsoft.Jet.OLEDB.4.0; Data Source=answers.xls; Extended Properties=\"Excel 8.0;IMEX=1\"");
+            MyCommand = new OleDbDataAdapter("select * from [Решения$]", MyConnection);
+            DtSet = new DataSet();
+            MyCommand.Fill(DtSet);
+            //dgvDecision.DataSource = DtSet.Tables[0];
+
+            DataTable dt = DtSet.Tables[0];
+            int i = 0;
+            foreach (DataRow row in dt.Rows)
+            {
+                var items = row.ItemArray;
+                if (i == 1)
+                {
+                    dgvDecision.Columns.Add(new DataGridViewTextBoxColumn() { HeaderText = items[0].ToString(), Width = 200 });
+                    dgvDecision.Columns.Add(new DataGridViewTextBoxColumn() { HeaderText = items[1].ToString(), Width = 300 });
+                }
+                if (i > 1)
+                {
+                    dgvDecision.Rows.Add(items);
+                }
+                i++;
+            }
+
+            MyConnection.Close();
+        }
+
+        public string ChangePass(string password)
+        {
+            string newpassword = "";
+            char[] pass = password.ToCharArray();
+            char[] listrus = new char[78];
+            char[] listeng = new char[78];
+            int i = 0;
+            StreamReader str = new StreamReader("listchange");
+            while ((line = str.ReadLine()) != null)
+            {
+                char[] array = line.ToCharArray();
+                listrus[i] = array[0];
+                listeng[i] = array[2];
+                i++;
+            }
+            str.Close();
+
+            for (int k = 0; k < password.Length; k++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if (pass[k] == listrus[j])
+                    {
+                        newpassword = newpassword + listeng[j];
+                        continue;
+                    }
+                    else if (pass[k] == listeng[j])
+                    {
+                        newpassword = newpassword + listrus[j];
+                        continue;
+                    }
+                }
+            }
+            return (newpassword);
+        }
+
+        public void saveDgvToExcel(string dgv)
+        {
+            Excel.Application xlApp = new Excel.Application(); //Excel
+            Excel.Workbook xlWB; //рабочая книга              
+            Excel.Worksheet xlSht; //лист Excel   
+            xlWB = xlApp.Workbooks.Open(Application.StartupPath + @"\answers.xls"); //название файла Excel  
+
+            if (dgv == "answers")
+            {
+                dgvAnswers.ReadOnly = true;
+                //Очищаем лист перед сохранением
+                Excel.Range rng;
+                xlSht = xlWB.Worksheets["Ответы"];//название листа или 1-й лист в книге xlSht = xlWB.Worksheets[1];
+                int iLastRow = xlSht.Cells[xlSht.Rows.Count, "A"].End[Excel.XlDirection.xlUp].Row;//последняя заполненная строка в столбце А
+                int iLastCol = xlSht.Cells[3, xlSht.Columns.Count].End[Excel.XlDirection.xlToLeft].Column; //последний заполненный столбец в 1-й строке
+                                                                                                           //rng = xlSht.UsedRange;
+                rng = (Excel.Range)xlSht.Range["A4", xlSht.Cells[iLastRow, iLastCol]]; //пример записи диапазона ячеек в переменную Rng
+                rng.Clear();
+
+                //Пишем из dgv в excel
+                for (int i = 0; i < dgvAnswers.RowCount; i++)
+                {
+                    for (int j = 0; j < dgvAnswers.ColumnCount; j++)
+                    {
+                        if (dgvAnswers.Rows[i].Cells[j].Value != null)
+                            xlSht.Rows[i + 4].Columns[j + 1] = dgvAnswers.Rows[i].Cells[j].Value.ToString();
+                    }
+                }
+            }
+
+            if (dgv == "decision")
+            {
+                dgvDecision.ReadOnly = true;
+                //Очищаем лист перед сохранением
+                Excel.Range rng;
+                xlSht = xlWB.Worksheets["Решения"];//название листа или 1-й лист в книге xlSht = xlWB.Worksheets[1];
+                int iLastRow = xlSht.Cells[xlSht.Rows.Count, "A"].End[Excel.XlDirection.xlUp].Row;//последняя заполненная строка в столбце А
+                int iLastCol = xlSht.Cells[3, xlSht.Columns.Count].End[Excel.XlDirection.xlToLeft].Column; //последний заполненный столбец в 1-й строке
+                rng = (Excel.Range)xlSht.Range["A4", xlSht.Cells[iLastRow, iLastCol]]; //пример записи диапазона ячеек в переменную Rng
+                rng.Clear();
+
+                //Пишем из dgv в excel
+                for (int k = 0; k < dgvDecision.RowCount; k++)
+                {
+                    for (int l = 0; l < dgvDecision.ColumnCount; l++)
+                    {
+                        if (dgvDecision.Rows[k].Cells[l].Value != null)
+                            xlSht.Rows[k + 4].Columns[l + 1] = dgvDecision.Rows[k].Cells[l].Value.ToString();
+                    }
+                }
+            }            
+
+            xlWB.Application.DisplayAlerts = false;
+            xlWB.SaveAs(Application.StartupPath + @"\answers.xls");
+
+            //xlApp.Visible = true; //отображаем Excel     
+            //xlWB.Close(false); //закрываем книгу, изменения не сохраняем
+            xlApp.Quit(); //закрываем Excel
+            GC.Collect(); // убрать за собой -- в том числе не используемые явно объекты !
+            MessageBox.Show("Выполнено", "!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public bool GetFileForDb()
+        {
+            bool result = false;
+            if (File.Exists("all_reports.xls"))
+            {
+                if (File.Exists(Application.StartupPath + @"\all_reports_.xls")) File.Delete(Application.StartupPath + @"\all_reports_.xls");
+                File.Move(Application.StartupPath + @"\all_reports.xls", Application.StartupPath + @"\all_reports_.xls");
+            }
+            try
+            {
+                WebClient webClient = new WebClient();
+                webClient.DownloadFile("http://skynet.corp.tander.ru/atlantis_reports/all_reports.xls", Application.StartupPath + @"\all_reports.xls");
+                //webClient.DownloadFile("https://ru.files.fm/down.php?cf&i=6msv4bsw&n=all_reports.xls", Application.StartupPath + @"\all_reports.xls");
+                if (File.Exists(Application.StartupPath + @"\all_reports_.xls")) File.Delete(Application.StartupPath + @"\all_reports_.xls");
+                result = true;                
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Не доступен сетевой ресурс. Не удается обновить БД объектов.\n" +
+                    "Попробуйте обновить БД позже из меню ПО,работа будет продолжена без обновления.\n" +
+                    "Некоторые объекты могут не отображаться в ПО.\n\n\n" + ex.ToString(), "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            if (!File.Exists(Application.StartupPath + @"\all_reports.xls"))
+            {
+
+                File.Move(Application.StartupPath + @"\all_reports_.xls", Application.StartupPath + @"\all_reports.xls");
+                File.Delete(Application.StartupPath + @"\all_reports_.xls");
+            }
+            return result;
+        }
+
         private void CbCodeGM_KeyDown(object sender, KeyEventArgs e)
         {
-            //if (e.KeyCode == Keys.Enter)
-            //{
-            //    GetLineAndFillBoxes("code");
-            //}
+            if (e.KeyCode == Keys.Enter)
+            {
+                FillAllFieldsHM(((ComboBox)sender).Tag.ToString());
+            }
         }
 
         private void CbCodeGM_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            //GetLineAndFillBoxes("code");
+            FillAllFieldsHM(((ComboBox)sender).Tag.ToString());
         }
 
         private void CbIpGM_KeyDown(object sender, KeyEventArgs e)
         {
-            //if (e.KeyCode == Keys.Enter)
-            //{
-            //    GetLineAndFillBoxes("ip");
-            //}
+            if (e.KeyCode == Keys.Enter)
+            {
+                FillAllFieldsHM(((ComboBox)sender).Tag.ToString());
+            }
         }
 
         private void BtnGetNamePassRobot_Click(object sender, EventArgs e)
@@ -1146,8 +1639,8 @@ namespace SD
             string newpassword = "";
             string password = txbRobotPass.Text;
             char[] pass = password.ToCharArray();
-            char[] listrus = new char[76];
-            char[] listeng = new char[76];
+            char[] listrus = new char[78];
+            char[] listeng = new char[78];
             int i = 0;
             StreamReader str = new StreamReader("listchange");
             while ((line = str.ReadLine()) != null)
@@ -1180,7 +1673,7 @@ namespace SD
 
         private void ToolRmsTerm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (IsGmSelected())
+            if (IsGmSelected() && (((ToolStripMenuItem)sender).Tag.ToString() != ""))
             {
                 if (e.Button == MouseButtons.Left)
                 {
@@ -1195,7 +1688,7 @@ namespace SD
 
         private void ToolSshIbgm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (IsGmSelected())
+            if (IsGmSelected() && (((ToolStripMenuItem)sender).Tag.ToString() != ""))
             {
                 if (e.Button == MouseButtons.Left)
                 {
@@ -1215,13 +1708,13 @@ namespace SD
 
         private void toolRdpTerm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (IsGmSelected())
+            if (IsGmSelected() && (((ToolStripMenuItem)sender).Tag.ToString() != ""))
                 SrvRdpConnect(((ToolStripMenuItem)sender).Tag.ToString());
         }
 
         private void toolIpmiIbgm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (IsGmSelected())
+            if (IsGmSelected() && (((ToolStripMenuItem)sender).Tag.ToString() != ""))
             {
                 if (e.Button == MouseButtons.Right)
                 {
@@ -1363,6 +1856,7 @@ namespace SD
         private void cbIpScalesStart_SelectionChangeCommitted(object sender, EventArgs e)
         {
             btnScalesPing.BackColor = Color.WhiteSmoke;
+            btnScalesPing.ForeColor = Color.Black;
 
             if (cbIpScalesStart.SelectedIndex == 1)
             {
@@ -1380,6 +1874,11 @@ namespace SD
         {
             cbIpScalesStart.DrawItem += cbIpScalesStart_DrawItem;
             cbIpScalesStart.DrawMode = DrawMode.OwnerDrawFixed;
+
+            tabControl.SelectedIndex = 1;
+            tabControl.SelectedIndex = 0;
+
+            btnTpHm.Font = new Font(btnTpHm.Font, FontStyle.Underline);
         }
 
         private void cbIpScalesStart_DrawItem(object sender, DrawItemEventArgs e)
@@ -1423,14 +1922,39 @@ namespace SD
 
         private void menuUpdateBd_Click(object sender, EventArgs e)
         {
+            if (File.Exists("DB_back.mdb")) File.Delete("DB_back.mdb");
+            File.Copy("DB.mdb", "DB_back.mdb");
+            if (File.Exists("all_reports_back.xls")) File.Delete("all_reports_back.xls");
+            File.Copy("all_reports.xls", "all_reports_back.xls");
+
             CreatDbGM();
-            LoadComboBox();
+            if (GetFileForDb())
+            {
+                FillDatabase();
+
+                cbCodeGM.DataSource = null;
+                cbNameGM.DataSource = null;
+                cbIpGM.DataSource = null;
+                cbNameMM.DataSource = null;
+                cbCodeMM.DataSource = null;
+
+                cbNameGM.Items.Clear();
+                cbCodeGM.Items.Clear();
+                cbIpGM.Items.Clear();
+                cbNameMM.Items.Clear();
+                cbCodeMM.Items.Clear();
+
+                LoadComboBox();
+                MessageBox.Show("БД обновлена", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            MessageBox.Show("Не удалось обновить БД", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void menuSetPassword_Click(object sender, EventArgs e)
         {
             SetPasswords fsp = new SetPasswords();
-            fsp.ShowDialog();
+            fsp.ShowDialog();            
         }
 
         private void menuSettigs_Click(object sender, EventArgs e)
@@ -1443,12 +1967,7 @@ namespace SD
         {
             if (IsGmSelected())
             {
-                if (((ToolStripMenuItem)sender).Tag.ToString() != "10.5.44.225")
-                {
-                    SrvRmsConnect(subnetIp.Remove(subnetIp.Length - 1, 1) + ((ToolStripMenuItem)sender).Tag.ToString());
-                }
-                else
-                    SrvRmsConnect(((ToolStripMenuItem)sender).Tag.ToString());
+                SrvRmsConnect(((ToolStripMenuItem)sender).Tag.ToString());
             }
         }
 
@@ -1456,11 +1975,10 @@ namespace SD
         {
             if (IsGmSelected())
             {
-                string ip = subnetIp.Remove(subnetIp.Length - 1, 1) + ((ToolStripMenuItem)sender).Tag.ToString();
                 if (Mode.mode)
-                    ProcStart(pathPutty, " -ssh -l " + Constants.UserLogin + " -pw " + Constants.UserPass + " " + ip);
+                    ProcStart(pathPutty, " -ssh -l " + Constants.UserLogin + " -pw " + Constants.UserPass + " " + ((ToolStripMenuItem)sender).Tag.ToString());
                 else
-                    ProcStart(pathPutty, " -ssh " + ip);
+                    ProcStart(pathPutty, " -ssh " + ((ToolStripMenuItem)sender).Tag.ToString());
             }            
         }
 
@@ -1664,6 +2182,17 @@ namespace SD
         private void btnSrvHide_Click(object sender, EventArgs e)
         {
             SrvShowHide("hide");
+            for (int i = 0; i < SrvArr.Length; i++)
+            {
+                Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + SrvArr[i].ToString()] as Label;
+                lbl.BackColor = Color.WhiteSmoke;
+            }
+
+            for (int i = 0; i < IpmiArr.Length; i++)
+            {
+                Label lbl = tpHM.Controls["tableLayoutPanel4"].Controls["gbServersAvailability"].Controls["lblPing" + IpmiArr[i].ToString()] as Label;
+                lbl.BackColor = Color.WhiteSmoke;
+            }
         }
 
         private void btnPingSrvs_Click(object sender, EventArgs e)
@@ -1673,96 +2202,531 @@ namespace SD
                 progressBar.Value = 0;
                 progressBar.Maximum = SrvArr.Length;
                 //проверяем FW
-                IPStatus status = new Ping().Send(lblPing253.Tag.ToString(), 3000).Status;
-
-                if (status != IPStatus.Success)
+                try
                 {
-                    DialogResult result = MessageBox.Show("Firewall не доступен.\nРекомендуется проверить доступность\nостальных серверов в ручную.\nПродолжить автоматическую проверку?", "Information", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-                    if (result == DialogResult.Yes)
+                    IPStatus status = new Ping().Send(lblPing253.Tag.ToString(), 3000).Status;
+
+                    if (status != IPStatus.Success)
+                    {
+                        DialogResult result = MessageBox.Show("Firewall не доступен.\nРекомендуется проверить доступность\nостальных серверов в ручную.\nПродолжить автоматическую проверку?", "Information", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                        if (result == DialogResult.Yes)
+                        {
+                            for (int i = 0; i < SrvArr.Length; i++)
+                            {
+                                PingSrv(SrvArr[i].ToString(), subnetIp + SrvArr[i].ToString());
+                                progressBar.PerformStep();
+                            }
+                        }
+                        else
+                            return;
+                    }
+                    else
                     {
                         for (int i = 0; i < SrvArr.Length; i++)
                         {
-                            Ping(SrvArr[i].ToString(), txbIpScalesStart.Text + SrvArr[i].ToString());
+                            PingSrv(SrvArr[i].ToString(), subnetIp + SrvArr[i].ToString());
                             progressBar.PerformStep();
                         }
                     }
-                    else
-                        return;
                 }
-                else
+                catch (Exception ex)
                 {
-                    for (int i = 0; i < SrvArr.Length; i++)
+                    MessageBox.Show(ex.ToString(), "Ошибка выполнения Ping", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+        }
+
+        private void lblPing1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (IsGmSelected())
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    IPStatus status = Ping(((Label)sender).Tag.ToString());
+                    if (status == IPStatus.Success) ((Label)sender).BackColor = Color.Green;
+                    else ((Label)sender).BackColor = Color.Red;
+                }
+                else if (e.Button == MouseButtons.Right)
+                {
+                    PingT(((Label)sender).Tag.ToString());
+                }
+            }
+        }
+
+        private void btnPingMM_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (IsMmSelected())
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    try
                     {
-                        Ping(SrvArr[i].ToString(), txbIpScalesStart.Text + SrvArr[i].ToString());
-                        progressBar.PerformStep();
+                        IPStatus status = Ping(btnPingMM.Tag.ToString());
+                        if (status == IPStatus.Success)
+                        {
+                            btnPingMM.BackColor = Color.Green;
+                        }
+                        else
+                        {
+                            btnPingMM.BackColor = Color.Red;
+                        }
                     }
+                    catch
+                    {
+                        btnPingMM.BackColor = Color.Red;
+                    }
+
+                    try
+                    {
+                        IPStatus status = Ping(lblMainChanelMM.Tag.ToString());
+                        lblMainChanelMM.Text = Dns.GetHostAddresses(lblMainChanelMM.Tag.ToString())[0].ToString();
+
+                        if (status == IPStatus.Success)
+                        {
+                            lblMainChanelMM.BackColor = Color.Green;
+                        }
+                        else
+                        {
+                            lblMainChanelMM.BackColor = Color.Red;
+                        }
+                    }
+                    catch
+                    {
+                        lblMainChanelMM.BackColor = Color.Red;
+                    }
+
+                    try
+                    {
+                        IPStatus status = Ping(lblReserveChanelMM.Tag.ToString());
+                        lblReserveChanelMM.Text = Dns.GetHostAddresses(lblReserveChanelMM.Tag.ToString())[0].ToString();
+
+                        if (status == IPStatus.Success)
+                        {
+                            lblReserveChanelMM.BackColor = Color.Green;
+                        }
+                        else
+                        {
+                            lblReserveChanelMM.BackColor = Color.Red;
+                        }
+                    }
+                    catch
+                    {
+                        lblReserveChanelMM.BackColor = Color.Red;
+                    }
+                }
+                else if (e.Button == MouseButtons.Right)
+                {
+                    PingT(btnPingMM.Tag.ToString());
+                }
+            }
+        }
+
+        private void cbCodeMM_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                FillAllFieldsMM(((ComboBox)sender).Tag.ToString());
+            }
+        }
+
+        private void cbCodeMM_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            FillAllFieldsMM(((ComboBox)sender).Tag.ToString());
+        }
+
+        private void tsbtnRmsMM_Click(object sender, EventArgs e)
+        {
+            if (IsMmSelected() && ((ToolStripButton)sender).Tag.ToString() != "")
+            {
+                if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == false)
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = pathRms;
+                    string arg = " /d " + '\u0022' + pathRms + '\u0022' + " /name:" + '\u0022' + cbCodeMM.Text + "_" 
+                        + cbNameMM.Text + "_" + tslblTypeTO.Text + " " + '\u0022' + " /create /host:" + ((ToolStripButton)sender).Tag.ToString() + " /FULLCONTROL";
+                    psi.Arguments = arg;
+                    Process.Start(psi);
+                }
+                if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == false)
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = pathRms;
+                    string arg = " /d " + '\u0022' + pathRms + '\u0022' + " /name:" + '\u0022' + cbCodeMM.Text + "_"
+                        + cbNameMM.Text + "_" + tslblTypeTO.Text + "_" + "IP_OSN" + " " + '\u0022' + " /create /host:" + lblMainChanelMM.Text + " /FULLCONTROL";
+                    psi.Arguments = arg;
+                    Process.Start(psi);
+                }
+                if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == true)
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = pathRms;
+                    string arg = " /d " + '\u0022' + pathRms + '\u0022' + " /name:" + '\u0022' + cbCodeMM.Text + "_"
+                        + cbNameMM.Text + "_" + tslblTypeTO.Text + "_" + "IP_RES" + " " + '\u0022' + " /create /host:" + lblReserveChanelMM.Text + " /FULLCONTROL";
+                    psi.Arguments = arg;
+                    Process.Start(psi);
+                }
+                if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == true)
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = pathRms;
+                    string arg = " /d " + '\u0022' + pathRms + '\u0022' + " /name:" + '\u0022' + cbCodeMM.Text + "_"
+                        + cbNameMM.Text + "_" + tslblTypeTO.Text + "_" + "RES" + " " + '\u0022' + " /create /host:" + lblReserveChanelMM.Tag.ToString() + " /FULLCONTROL";
+                    psi.Arguments = arg;
+                    Process.Start(psi);
                 }
 
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void tsbtnSshMM_Click(object sender, EventArgs e)
         {
+            //PuTTY.exe - P 2223 - l root - pw 123456789 OMD_340109.ONLINEMM.CORP.TANDER.RU
+            if (IsMmSelected() && (((ToolStripButton)sender).Tag.ToString() != ""))
+            {
+                if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == false)
+                {
+                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + (((ToolStripButton)sender).Tag.ToString()));
+                }
+                if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == false)
+                {
+                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + lblMainChanelMM.Text);
+                }
+                if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == true)
+                {
+                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + lblReserveChanelMM.Text);
+                }
+                if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == true)
+                {
+                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + lblReserveChanelMM.Tag.ToString());
+                }
+                
+            }
+        }
+
+        private void tsbtnWinscpMM_Click(object sender, EventArgs e)
+        {
+            if (IsMmSelected() && ((ToolStripButton)sender).Tag.ToString() != "")
+            {
+                if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == false)
+                {
+                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + (((ToolStripButton)sender).Tag.ToString()) + ":2223");
+                }
+                if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == false)
+                {
+                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + lblMainChanelMM.Text + ":2223");
+                }
+                if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == true)
+                {
+                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + lblReserveChanelMM.Text + ":2223");
+                }
+                if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == true)
+                {
+                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + lblReserveChanelMM.Tag.ToString() + ":2223");
+                }
+                
+            }
+        }
+
+        private void tpMM_Enter(object sender, EventArgs e)
+        {
+            this.Width = 586;
+            menuPingSrvs.Enabled = false;
+        }
+
+        private void btnbtnChangePassLangMM_Click(object sender, EventArgs e)
+        {
+            txbRmsPass1.Text = ChangePass(txbRmsPass1.Text);
+            txbRmsPass2.Text = ChangePass(txbRmsPass2.Text);
+            txbRmsPass3.Text = ChangePass(txbRmsPass3.Text);
+
+            txbDbPass.Text = ChangePass(txbDbPass.Text);
+            txbIbmdPass.Text = ChangePass(txbIbmdPass.Text);
+        }
+
+        private void tsmEditAnswer_Click(object sender, EventArgs e)
+        {
+            if (((ToolStripMenuItem)sender).Tag.ToString() == "answers")
+            {
+                dgvAnswers.ReadOnly = false;
+                //dgvAnswers.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+                dgvAnswers.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            }
+            else if (((ToolStripMenuItem)sender).Tag.ToString() == "decision")
+            {
+                dgvDecision.ReadOnly = false;
+                dgvDecision.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            }
+        }
+
+        private void tsmSaveAnswer_Click(object sender, EventArgs e)
+        {
+            saveDgvToExcel(((ToolStripMenuItem)sender).Tag.ToString());
+            if (((ToolStripMenuItem)sender).Tag.ToString() == "answers")
+            {
+                dgvAnswers.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            }
+            else if (((ToolStripMenuItem)sender).Tag.ToString() == "decision")
+            {
+                dgvDecision.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+            }
+        }
+
+        private void btnHideFindAnswers_Click(object sender, EventArgs e)
+        {
+            if (((Button)sender).Tag.ToString() == "answers") pFindAnswers.Visible = false;
+            else if (((Button)sender).Tag.ToString() == "decision") pFindDecision.Visible = false;
+        }
+
+        private void tsmFindDecision_Click(object sender, EventArgs e)
+        {
+            if (((ToolStripMenuItem)sender).Tag.ToString() == "answers")
+            {
+                pFindAnswers.Visible = true;
+                txbFindAnswers.Focus();
+                txbFindAnswers.Text = "";
+            }
+            else if (((ToolStripMenuItem)sender).Tag.ToString() == "decision")
+            {
+                pFindDecision.Visible = true;
+                txbFindDecision.Focus();
+                txbFindDecision.Text = "";
+            }
+        }
+
+        private void txbFindAnswers_TextChanged(object sender, EventArgs e)
+        {
+
+            //table.DefaultView.RowFilter = string.Format("[имя столбца] LIKE '%{0}%'", txbFindAnswers.Text);
+            if (((TextBox)sender).Tag.ToString() == "answers")
+            {
+                if (txbFindAnswers.TextLength == 0)
+                {
+                    dgvAnswers.FirstDisplayedScrollingRowIndex = 0;
+                    dgvAnswers.ClearSelection();
+                }
+                else
+                {
+                    for (int i = 0; i < dgvAnswers.RowCount; i++)
+                    {
+                        dgvAnswers.Rows[i].Selected = false;
+                        for (int j = 0; j < dgvAnswers.ColumnCount; j++)
+                            if (dgvAnswers.Rows[i].Cells[j].Value != null)
+                                if (dgvAnswers.Rows[i].Cells[j].Value.ToString().ToLower().Contains(txbFindAnswers.Text.ToLower()))
+                                {
+                                    dgvAnswers.Rows[i].Selected = true;
+                                    dgvAnswers.FirstDisplayedScrollingRowIndex = i;
+                                    //break;
+                                }
+                    }
+                }                
+            }
+            else if (((TextBox)sender).Tag.ToString() == "decision")
+            {
+                if (txbFindDecision.TextLength == 0)
+                {
+                    dgvDecision.FirstDisplayedScrollingRowIndex = 0;
+                    dgvDecision.ClearSelection();
+                }
+                else
+                {
+                    for (int i = 0; i < dgvDecision.RowCount; i++)
+                    {
+                        dgvDecision.Rows[i].Selected = false;
+                        for (int j = 0; j < dgvDecision.ColumnCount; j++)
+                            if (dgvDecision.Rows[i].Cells[j].Value != null)
+                                if (dgvDecision.Rows[i].Cells[j].Value.ToString().ToLower().Contains(txbFindDecision.Text.ToLower()))
+                                {
+                                    dgvDecision.Rows[i].Selected = true;
+                                    dgvDecision.FirstDisplayedScrollingRowIndex = i;
+                                    //break;
+                                }
+                    }
+                }                
+            }            
+        }
+
+        private void tpAnswers_Enter(object sender, EventArgs e)
+        {
+            if (((TabPage)sender).Tag.ToString() == "answers") dgvAnswers.Focus();
+            if (((TabPage)sender).Tag.ToString() == "decision") dgvDecision.Focus();
+
+            this.Width = 586;
+            menuPingSrvs.Enabled = false;
+        }
+
+        private void tpHM_Enter(object sender, EventArgs e)
+        {
+            menuPingSrvs.Enabled = true;
+        }
+
+        private void tpUseful_Enter(object sender, EventArgs e)
+        {
+            this.Width = 586;
+            menuPingSrvs.Enabled = false;
+        }
+
+        private void btnEditSavePassMM_Click(object sender, EventArgs e)
+        {
+            if (IsMmSelected())
+            {
+                if (((Button)sender).Text == "Редактировать")
+                {
+                    txbRmsPass1.ReadOnly = false;
+                    txbRmsPass2.ReadOnly = false;
+                    txbRmsPass3.ReadOnly = false;
+                    txbDbPass.ReadOnly = false;
+                    txbIbmdPass.ReadOnly = false;
+                    txbMailPass.ReadOnly = false;
+
+                    ((Button)sender).Text = "Сохранить";
+                }
+                else if (((Button)sender).Text == "Сохранить")
+                {
+                    OleDbConnection connection = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=DB.mdb;Jet OLEDB:Database Password=parolDlya_BD;");
+
+                    //Очистка таблиц MD_MK и HM
+                    connection.Open();
+                    string query = "UPDATE PASS_MD_MK set rms_1 = @rms_1, rms_2 = @rms_2, rms_3 = @rms_3, dbase = @dbase, server = @server, mail = @mail where filial = @filial";
+
+                    OleDbCommand command = new OleDbCommand(query, connection);
+                    if (txbRmsPass1.Text != "")
+                    {
+                        command.Parameters.AddWithValue("@rms_1", txbRmsPass1.Text);
+                    }
+                    else command.Parameters.AddWithValue("@rms_1", DBNull.Value);
+                    if (txbRmsPass2.Text != "")
+                    {
+                        command.Parameters.AddWithValue("@rms_2", txbRmsPass2.Text);
+                    }
+                    else command.Parameters.AddWithValue("@rms_2", DBNull.Value);
+                    if (txbRmsPass3.Text != "")
+                    {
+                        command.Parameters.AddWithValue("@rms_3", txbRmsPass3.Text);
+                    }
+                    else command.Parameters.AddWithValue("@rms_3", DBNull.Value);
+                    if (txbDbPass.Text != "")
+                    {
+                        command.Parameters.AddWithValue("@dbase", txbDbPass.Text);
+                    }
+                    else command.Parameters.AddWithValue("@dbase", DBNull.Value);
+                    if (txbIbmdPass.Text != "")
+                    {
+                        command.Parameters.AddWithValue("@server", txbIbmdPass.Text);
+                    }
+                    else command.Parameters.AddWithValue("@server", DBNull.Value);
+                    if (txbMailPass.Text != "")
+                    {
+                        command.Parameters.AddWithValue("@mail", txbMailPass.Text);
+                    }
+                    else command.Parameters.AddWithValue("@mail", DBNull.Value);
+
+                    command.Parameters.AddWithValue("@filial", txbFilialMM.Text);
+
+                    command.ExecuteNonQuery();
+                    connection.Close();
+
+                    ((Button)sender).Text = "Редактировать";
+                    txbRmsPass1.ReadOnly = true;
+                    txbRmsPass2.ReadOnly = true;
+                    txbRmsPass3.ReadOnly = true;
+                    txbDbPass.ReadOnly = true;
+                    txbIbmdPass.ReadOnly = true;
+                    txbMailPass.ReadOnly = true;
+                }
+            }
             
+            
+
+
+        }
+
+        private void btnTpHm_Click(object sender, EventArgs e)
+        {
+            TabPage tb = tabControl.Controls["tp" + ((Button)sender).Tag.ToString()] as TabPage;
+            tabControl.SelectedTab = tb;
+            if (((Button)sender).Text == "ГМ")
+            {
+                btnTpHm.Font = new Font(btnTpHm.Font, FontStyle.Underline);
+                btnTpMMMK.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpAnswers.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpDecision.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpUseful.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+            }
+            else if (((Button)sender).Text == "ММ/МК")
+            {
+                btnTpHm.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpMMMK.Font = new Font(btnTpHm.Font, FontStyle.Underline);
+                btnTpAnswers.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpDecision.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpUseful.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+            }
+            else if (((Button)sender).Text == "Ответы")
+            {
+                btnTpHm.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpMMMK.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpAnswers.Font = new Font(btnTpHm.Font, FontStyle.Underline);
+                btnTpDecision.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpUseful.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+            }
+            else if (((Button)sender).Text == "Решения")
+            {
+                btnTpHm.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpMMMK.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpAnswers.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpDecision.Font = new Font(btnTpHm.Font, FontStyle.Underline);
+                btnTpUseful.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+            }
+            else if (((Button)sender).Text == "Полезное")
+            {
+                btnTpHm.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpMMMK.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpAnswers.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpDecision.Font = new Font(btnTpHm.Font, FontStyle.Regular);
+                btnTpUseful.Font = new Font(btnTpHm.Font, FontStyle.Underline);
+            }
+        }
+
+        private void lblMainChanelMM_Click(object sender, EventArgs e)
+        {
+            PingT(((Label)sender).Text);
+        }
+
+        private void menuSql_Click(object sender, EventArgs e)
+        {
+            Sql sql_form = new Sql();
+            sql_form.Show();
         }
 
         private void CbIpGM_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            //GetLineAndFillBoxes("ip");
+            FillAllFieldsHM(((ComboBox)sender).Tag.ToString());
         }
 
         private void CbNameGM_KeyDown(object sender, KeyEventArgs e)
         {
-            //if (e.KeyCode == Keys.Enter)
-            //{
-            //    GetLineAndFillBoxes("name");
-            //}
+            if (e.KeyCode == Keys.Enter)
+            {
+                FillAllFieldsHM(((ComboBox)sender).Tag.ToString());
+            }
         }
 
         private void CbNameGM_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            //GetLineAndFillBoxes("name");
-            DataTable dtHm = dsHm.Tables[0];
-            foreach (DataRow row in dtHm.Rows)
-            {
-                var items = row.ItemArray;
-                if (items[2].ToString() == cbNameGM.SelectedValue.ToString())
-                {
-                    int start = items[6].ToString().Length - 8;
-                    int count = 8;
-                    txbDateOpen.Text = items[6].ToString().Remove(start, count);
-                    txbFilial.Text = items[5].ToString();
-                    txbTimeGM.Text = items[9].ToString();
-                    lblStatusGM.Text = items[3].ToString();
-                    FillIp(items[8].ToString());
-
-                    cbIpScalesStart.Items.Clear();
-                    string[] arrip = items[8].ToString().Split('.');
-                    string ipPlus = (Convert.ToInt32(arrip[2]) + 1).ToString();
-                    cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + arrip[2] + '.');
-                    cbIpScalesStart.Items.Add(arrip[0] + '.' + arrip[1] + '.' + ipPlus + '.');
-                    cbIpScalesStart.SelectedIndex = 0;
-
-                    subnetItems = cbIpScalesStart.Items.Cast<string>().ToArray();
-
-                    progressBar.Value = 0;
-                    cbNameGM.SelectionLength = 0;
-                    cbNameGM.SelectionStart = cbNameGM.Text.Length;
-
-                    return;
-                }
-            }
-
-            
-
+            FillAllFieldsHM(((ComboBox)sender).Tag.ToString());
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void cbNameMM_KeyDown(object sender, KeyEventArgs e)
         {
-            FillDatabase();
+            if (e.KeyCode == Keys.Enter)
+            {
+                FillAllFieldsMM(((ComboBox)sender).Tag.ToString());
+            }
         }
 
-        
+        private void cbNameMM_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            FillAllFieldsMM(((ComboBox)sender).Tag.ToString());
+        }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {

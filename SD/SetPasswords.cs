@@ -75,12 +75,12 @@ namespace SD
             //Constants.SrvSmenaRootLogin = loginSrvSsh;
             //Constants.SrvSmenaRootPass = txbPassSmenaRoot.Text;
 
-            XmlElement srvspdaemon = xmlDoc.CreateElement("SrvSpdaemon");
-            srvspdaemon.SetAttribute("login", "spdaemon");
-            srvspdaemon.InnerText = txbPassSpdaemon.Text;
-            xmlDoc.DocumentElement.AppendChild(srvspdaemon);
-            Constants.SrvSpdaemonLogin = "spdaemon";
-            Constants.SrvSpdaemonPass = txbPassSpdaemon.Text;
+            //XmlElement srvspdaemon = xmlDoc.CreateElement("SrvSpdaemon");
+            //srvspdaemon.SetAttribute("login", "spdaemon");
+            //srvspdaemon.InnerText = txbPassSpdaemon.Text;
+            //xmlDoc.DocumentElement.AppendChild(srvspdaemon);
+            //Constants.SrvSpdaemonLogin = "spdaemon";
+            //Constants.SrvSpdaemonPass = txbPassSpdaemon.Text;
 
             XmlElement digitprice = xmlDoc.CreateElement("Digitprice");
             digitprice.SetAttribute("login", txbLoginDigitprice.Text);
@@ -137,6 +137,11 @@ namespace SD
             if (File.Exists("LockStorage"))
                 File.Delete("LockStorage");
             Close();
+        }
+
+        private void SetPasswords_Load(object sender, EventArgs e)
+        {
+            TopMost = true;
         }
     }
 }

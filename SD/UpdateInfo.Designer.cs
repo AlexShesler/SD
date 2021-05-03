@@ -126,6 +126,7 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "UpdateInfo";
             this.Text = "UpdateInfo";
+            this.Load += new System.EventHandler(this.UpdateInfo_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);

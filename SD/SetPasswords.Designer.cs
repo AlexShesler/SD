@@ -41,9 +41,6 @@
             this.btnShowPass6 = new System.Windows.Forms.Button();
             this.txbPassDigitprice = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.btnShowPass5 = new System.Windows.Forms.Button();
-            this.txbPassSpdaemon = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
             this.btnShowPass3 = new System.Windows.Forms.Button();
             this.txbPassSalepoint = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -57,7 +54,7 @@
             // 
             // txbLoginBd
             // 
-            this.txbLoginBd.Location = new System.Drawing.Point(13, 239);
+            this.txbLoginBd.Location = new System.Drawing.Point(13, 201);
             this.txbLoginBd.Name = "txbLoginBd";
             this.txbLoginBd.Size = new System.Drawing.Size(130, 20);
             this.txbLoginBd.TabIndex = 113;
@@ -65,16 +62,18 @@
             // btnShowPass7
             // 
             this.btnShowPass7.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass7.Image")));
-            this.btnShowPass7.Location = new System.Drawing.Point(285, 239);
+            this.btnShowPass7.Location = new System.Drawing.Point(248, 202);
             this.btnShowPass7.Name = "btnShowPass7";
-            this.btnShowPass7.Size = new System.Drawing.Size(30, 20);
+            this.btnShowPass7.Size = new System.Drawing.Size(30, 18);
             this.btnShowPass7.TabIndex = 128;
             this.btnShowPass7.Tag = "Bd";
             this.btnShowPass7.UseVisualStyleBackColor = true;
+            this.btnShowPass7.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseDown);
+            this.btnShowPass7.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseUp);
             // 
             // txbPassBd
             // 
-            this.txbPassBd.Location = new System.Drawing.Point(149, 239);
+            this.txbPassBd.Location = new System.Drawing.Point(149, 201);
             this.txbPassBd.Name = "txbPassBd";
             this.txbPassBd.PasswordChar = '•';
             this.txbPassBd.Size = new System.Drawing.Size(130, 20);
@@ -83,7 +82,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(10, 223);
+            this.label7.Location = new System.Drawing.Point(10, 185);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(223, 13);
             this.label7.TabIndex = 125;
@@ -91,7 +90,7 @@
             // 
             // txbLoginDigitprice
             // 
-            this.txbLoginDigitprice.Location = new System.Drawing.Point(13, 200);
+            this.txbLoginDigitprice.Location = new System.Drawing.Point(13, 162);
             this.txbLoginDigitprice.Name = "txbLoginDigitprice";
             this.txbLoginDigitprice.Size = new System.Drawing.Size(130, 20);
             this.txbLoginDigitprice.TabIndex = 111;
@@ -112,7 +111,7 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(249, 274);
+            this.btnOK.Location = new System.Drawing.Point(147, 236);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 115;
@@ -123,7 +122,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(330, 274);
+            this.btnCancel.Location = new System.Drawing.Point(228, 236);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 116;
@@ -134,16 +133,18 @@
             // btnShowPass6
             // 
             this.btnShowPass6.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass6.Image")));
-            this.btnShowPass6.Location = new System.Drawing.Point(285, 200);
+            this.btnShowPass6.Location = new System.Drawing.Point(248, 163);
             this.btnShowPass6.Name = "btnShowPass6";
-            this.btnShowPass6.Size = new System.Drawing.Size(30, 20);
+            this.btnShowPass6.Size = new System.Drawing.Size(30, 18);
             this.btnShowPass6.TabIndex = 124;
             this.btnShowPass6.Tag = "Digitprice";
             this.btnShowPass6.UseVisualStyleBackColor = true;
+            this.btnShowPass6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseDown);
+            this.btnShowPass6.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseUp);
             // 
             // txbPassDigitprice
             // 
-            this.txbPassDigitprice.Location = new System.Drawing.Point(149, 200);
+            this.txbPassDigitprice.Location = new System.Drawing.Point(149, 162);
             this.txbPassDigitprice.Name = "txbPassDigitprice";
             this.txbPassDigitprice.PasswordChar = '•';
             this.txbPassDigitprice.Size = new System.Drawing.Size(130, 20);
@@ -152,48 +153,23 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 184);
+            this.label6.Location = new System.Drawing.Point(10, 146);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(291, 13);
             this.label6.TabIndex = 121;
             this.label6.Text = "Логин и пароль для подключения к серверу ЭЦ по SSH:";
             // 
-            // btnShowPass5
-            // 
-            this.btnShowPass5.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass5.Image")));
-            this.btnShowPass5.Location = new System.Drawing.Point(149, 161);
-            this.btnShowPass5.Name = "btnShowPass5";
-            this.btnShowPass5.Size = new System.Drawing.Size(30, 20);
-            this.btnShowPass5.TabIndex = 123;
-            this.btnShowPass5.Tag = "Spdaemon";
-            this.btnShowPass5.UseVisualStyleBackColor = true;
-            // 
-            // txbPassSpdaemon
-            // 
-            this.txbPassSpdaemon.Location = new System.Drawing.Point(13, 161);
-            this.txbPassSpdaemon.Name = "txbPassSpdaemon";
-            this.txbPassSpdaemon.PasswordChar = '•';
-            this.txbPassSpdaemon.Size = new System.Drawing.Size(130, 20);
-            this.txbPassSpdaemon.TabIndex = 110;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(10, 145);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(396, 13);
-            this.label5.TabIndex = 122;
-            this.label5.Text = "Пароль для подключении к серверам по SSH под пользователем spdaemon:";
-            // 
             // btnShowPass3
             // 
             this.btnShowPass3.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass3.Image")));
-            this.btnShowPass3.Location = new System.Drawing.Point(285, 122);
+            this.btnShowPass3.Location = new System.Drawing.Point(248, 123);
             this.btnShowPass3.Name = "btnShowPass3";
-            this.btnShowPass3.Size = new System.Drawing.Size(30, 20);
+            this.btnShowPass3.Size = new System.Drawing.Size(30, 18);
             this.btnShowPass3.TabIndex = 126;
             this.btnShowPass3.Tag = "Salepoint";
             this.btnShowPass3.UseVisualStyleBackColor = true;
+            this.btnShowPass3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseDown);
+            this.btnShowPass3.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseUp);
             // 
             // txbPassSalepoint
             // 
@@ -216,12 +192,14 @@
             // btnShowPass2
             // 
             this.btnShowPass2.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass2.Image")));
-            this.btnShowPass2.Location = new System.Drawing.Point(285, 69);
+            this.btnShowPass2.Location = new System.Drawing.Point(248, 70);
             this.btnShowPass2.Name = "btnShowPass2";
-            this.btnShowPass2.Size = new System.Drawing.Size(30, 20);
+            this.btnShowPass2.Size = new System.Drawing.Size(30, 18);
             this.btnShowPass2.TabIndex = 119;
             this.btnShowPass2.Tag = "PuttyDigi";
             this.btnShowPass2.UseVisualStyleBackColor = true;
+            this.btnShowPass2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseDown);
+            this.btnShowPass2.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseUp);
             // 
             // txbPassPuttyDigi
             // 
@@ -243,12 +221,15 @@
             // btnShowPass1
             // 
             this.btnShowPass1.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass1.Image")));
-            this.btnShowPass1.Location = new System.Drawing.Point(149, 30);
+            this.btnShowPass1.Location = new System.Drawing.Point(112, 31);
+            this.btnShowPass1.Margin = new System.Windows.Forms.Padding(0);
             this.btnShowPass1.Name = "btnShowPass1";
-            this.btnShowPass1.Size = new System.Drawing.Size(30, 20);
+            this.btnShowPass1.Size = new System.Drawing.Size(30, 18);
             this.btnShowPass1.TabIndex = 117;
             this.btnShowPass1.Tag = "Uvnc";
             this.btnShowPass1.UseVisualStyleBackColor = true;
+            this.btnShowPass1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseDown);
+            this.btnShowPass1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseUp);
             // 
             // txbPassUvnc
             // 
@@ -271,7 +252,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(417, 310);
+            this.ClientSize = new System.Drawing.Size(332, 266);
             this.Controls.Add(this.txbLoginBd);
             this.Controls.Add(this.btnShowPass7);
             this.Controls.Add(this.txbPassBd);
@@ -284,9 +265,6 @@
             this.Controls.Add(this.btnShowPass6);
             this.Controls.Add(this.txbPassDigitprice);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.btnShowPass5);
-            this.Controls.Add(this.txbPassSpdaemon);
-            this.Controls.Add(this.label5);
             this.Controls.Add(this.btnShowPass3);
             this.Controls.Add(this.txbPassSalepoint);
             this.Controls.Add(this.label3);
@@ -298,6 +276,7 @@
             this.Controls.Add(this.label1);
             this.Name = "SetPasswords";
             this.Text = "SetPasswords";
+            this.Load += new System.EventHandler(this.SetPasswords_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -317,9 +296,6 @@
         private System.Windows.Forms.Button btnShowPass6;
         private System.Windows.Forms.TextBox txbPassDigitprice;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Button btnShowPass5;
-        private System.Windows.Forms.TextBox txbPassSpdaemon;
-        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button btnShowPass3;
         private System.Windows.Forms.TextBox txbPassSalepoint;
         private System.Windows.Forms.Label label3;

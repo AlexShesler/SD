@@ -89,5 +89,10 @@ namespace SD
             }
 
         }
+
+        private void UpdateInfo_Load(object sender, EventArgs e)
+        {
+            TopMost = true;
+        }
     }
 }

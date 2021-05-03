@@ -45,5 +45,7 @@ namespace SD
         public static string UserLogin { get; set; }
         public static string UserPass { get; set; }
         public static string UserStatus { get; set; }
+        public static string SqlFile { get; set; }
+
     }
 }

@@ -52,6 +52,11 @@ namespace SD
                     string[] i = line.Split('|');
                     txbUpHost.Text = i[1];
                 }
+                if (line.StartsWith("winscp"))
+                {
+                    string[] i = line.Split('|');
+                    txbPathWinSCP.Text = i[1];
+                }
             }
             str.Close();
         }
@@ -64,7 +69,7 @@ namespace SD
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            StreamReader str = new StreamReader("config", Encoding.Default);
+            StreamReader str = new StreamReader("config", Encoding.UTF8);
             StringBuilder stb = new StringBuilder();
 
             while (!str.EndOfStream)
@@ -103,6 +108,11 @@ namespace SD
                     i[1] = txbUpHost.Text;
                     stb.AppendLine(i[0] + "|" + i[1]);
                 }
+                if (line.StartsWith("winscp"))
+                {
+                    i[1] = txbPathWinSCP.Text;
+                    stb.AppendLine(i[0] + "|" + i[1]);
+                }
             }
 
             str.Close();
@@ -131,6 +141,17 @@ namespace SD
         {
             if (openFileDialog.ShowDialog() != DialogResult.OK) return;
             txbPathUvnc.Text = openFileDialog.FileName;
+        }
+
+        private void btnPathWinScp_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() != DialogResult.OK) return;
+            txbPathWinSCP.Text = openFileDialog.FileName;
+        }
+
+        private void Settings_Load(object sender, EventArgs e)
+        {
+            TopMost = true;
         }
     }
 }
