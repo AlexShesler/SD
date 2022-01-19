@@ -36,7 +36,7 @@ namespace SD
         /// <returns>Возвращает true, если имя и пароль верны</returns>
         public static bool ValidateCredentials(string sUserName, string sPassword)
         {
-            return GetPrincipalContext().ValidateCredentials(sUserName, sPassword);
+            return GetPrincipalContext().ValidateCredentials(sUserName, sPassword, ContextOptions.Negotiate);
         }
 
         /// <summary>

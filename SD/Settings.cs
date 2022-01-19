@@ -57,6 +57,11 @@ namespace SD
                     string[] i = line.Split('|');
                     txbPathWinSCP.Text = i[1];
                 }
+                if (line.StartsWith("sshuser"))
+                {
+                    string[] i = line.Split('|');
+                    txbSshUser.Text = i[1];
+                }
             }
             str.Close();
         }
@@ -72,46 +77,24 @@ namespace SD
             StreamReader str = new StreamReader("config", Encoding.UTF8);
             StringBuilder stb = new StringBuilder();
 
+            if (chbAutoUpdate.Checked == true) stb.AppendLine("autoupdate|true");
+            else stb.AppendLine("autoupdate|false");
+            stb.AppendLine("pathupdate|" + txbPathUpdate.Text);
+            stb.AppendLine("putty|" + txbPathPutty.Text);
+            stb.AppendLine("rms|" + txbPathRms.Text);
+            stb.AppendLine("uvnc|" + txbPathUvnc.Text);
+            stb.AppendLine("uphost|" + txbUpHost.Text);
+            stb.AppendLine("winscp|" + txbPathWinSCP.Text);
+            stb.AppendLine("sshuser|" + txbSshUser.Text);
+
             while (!str.EndOfStream)
             {
                 string line = str.ReadLine();
                 string[] i = line.Split('|');
-
-                if (line.StartsWith("autoupdate"))
+                if (i[0] == "topmost")
                 {
-                    if (chbAutoUpdate.Checked == true) i[1] = "true";
-                    else i[1] = "false";
-                    stb.AppendLine(i[0] + "|" + i[1]);
-                }
-                if (line.StartsWith("pathupdate"))
-                {
-                    i[1] = txbPathUpdate.Text;
-                    stb.AppendLine(i[0] + "|" + i[1]);
-                }
-                if (line.StartsWith("putty"))
-                {
-                    i[1] = txbPathPutty.Text;
-                    stb.AppendLine(i[0] + "|" + i[1]);
-                }
-                if (line.StartsWith("rms"))
-                {
-                    i[1] = txbPathRms.Text;
-                    stb.AppendLine(i[0] + "|" + i[1]);
-                }
-                if (line.StartsWith("uvnc"))
-                {
-                    i[1] = txbPathUvnc.Text;
-                    stb.AppendLine(i[0] + "|" + i[1]);
-                }
-                if (line.StartsWith("uphost"))
-                {
-                    i[1] = txbUpHost.Text;
-                    stb.AppendLine(i[0] + "|" + i[1]);
-                }
-                if (line.StartsWith("winscp"))
-                {
-                    i[1] = txbPathWinSCP.Text;
-                    stb.AppendLine(i[0] + "|" + i[1]);
+                    if (i[1] == "true") stb.AppendLine("topmost|true");
+                    else stb.AppendLine("topmost|false");
                 }
             }
 
@@ -122,8 +105,13 @@ namespace SD
             sw.Close();
             Close();
 
-            MessageBox.Show("Для применения настроек программа будет перезапущена.", "Внимание!", MessageBoxButtons.OK);
-            Application.Restart();
+            if (MainForm.SelfRef != null)
+            {
+                MainForm.SelfRef.ReadConfig();
+            }
+
+            //MessageBox.Show("Для применения настроек программа будет перезапущена.", "Внимание!", MessageBoxButtons.OK);
+            //Application.Restart();
         }
 
         private void btnPathRms_Click(object sender, EventArgs e)

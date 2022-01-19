@@ -191,6 +191,7 @@
             this.txbMailPass = new System.Windows.Forms.TextBox();
             this.btnbtnChangePassLangMM = new System.Windows.Forms.Button();
             this.btnEditSavePassMM = new System.Windows.Forms.Button();
+            this.chbxUZSSHIBMD = new System.Windows.Forms.CheckBox();
             this.tsServEquipConectMM = new System.Windows.Forms.ToolStrip();
             this.tsbtnRmsMM = new System.Windows.Forms.ToolStripButton();
             this.tsbtnSshMM = new System.Windows.Forms.ToolStripButton();
@@ -462,7 +463,7 @@
             this.menuSql.Name = "menuSql";
             this.menuSql.Size = new System.Drawing.Size(255, 22);
             this.menuSql.Text = "SQL";
-            this.menuSql.Click += new System.EventHandler(this.menuSql_Click);
+            this.menuSql.Visible = false;
             // 
             // menuMorganizer
             // 
@@ -1813,12 +1814,13 @@
             this.tableLayoutPanel15.Location = new System.Drawing.Point(1, 14);
             this.tableLayoutPanel15.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel15.Name = "tableLayoutPanel15";
-            this.tableLayoutPanel15.RowCount = 8;
+            this.tableLayoutPanel15.RowCount = 9;
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
+            this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel15.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
@@ -2045,10 +2047,11 @@
             this.tableLayoutPanel16.Controls.Add(this.txbMailPass, 0, 5);
             this.tableLayoutPanel16.Controls.Add(this.btnbtnChangePassLangMM, 0, 6);
             this.tableLayoutPanel16.Controls.Add(this.btnEditSavePassMM, 1, 6);
+            this.tableLayoutPanel16.Controls.Add(this.chbxUZSSHIBMD, 1, 8);
             this.tableLayoutPanel16.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel16.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel16.Name = "tableLayoutPanel16";
-            this.tableLayoutPanel16.RowCount = 8;
+            this.tableLayoutPanel16.RowCount = 9;
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
@@ -2056,6 +2059,7 @@
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel16.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel16.Size = new System.Drawing.Size(310, 186);
             this.tableLayoutPanel16.TabIndex = 0;
@@ -2196,6 +2200,21 @@
             this.btnEditSavePassMM.Text = "Редактировать";
             this.btnEditSavePassMM.UseVisualStyleBackColor = false;
             this.btnEditSavePassMM.Click += new System.EventHandler(this.btnEditSavePassMM_Click);
+            // 
+            // chbxUZSSHIBMD
+            // 
+            this.chbxUZSSHIBMD.AutoSize = true;
+            this.chbxUZSSHIBMD.Checked = true;
+            this.chbxUZSSHIBMD.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tableLayoutPanel16.SetColumnSpan(this.chbxUZSSHIBMD, 2);
+            this.chbxUZSSHIBMD.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.chbxUZSSHIBMD.Location = new System.Drawing.Point(106, 166);
+            this.chbxUZSSHIBMD.Margin = new System.Windows.Forms.Padding(3, 6, 3, 3);
+            this.chbxUZSSHIBMD.Name = "chbxUZSSHIBMD";
+            this.chbxUZSSHIBMD.Size = new System.Drawing.Size(201, 17);
+            this.chbxUZSSHIBMD.TabIndex = 27;
+            this.chbxUZSSHIBMD.Text = "Исп. свою УЗ для подключения SSH";
+            this.chbxUZSSHIBMD.UseVisualStyleBackColor = true;
             // 
             // tsServEquipConectMM
             // 
@@ -3051,6 +3070,7 @@
         private System.Windows.Forms.CheckBox chbxConnectToIPMM;
         private System.Windows.Forms.CheckBox chbxConnectToIPReservMM;
         private System.Windows.Forms.ToolStripMenuItem menuSql;
+        private System.Windows.Forms.CheckBox chbxUZSSHIBMD;
     }
 }
 

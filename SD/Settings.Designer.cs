@@ -49,12 +49,14 @@
             this.btnPathWinScp = new System.Windows.Forms.Button();
             this.txbPathWinSCP = new System.Windows.Forms.TextBox();
             this.lblPathWinSCP = new System.Windows.Forms.Label();
+            this.txbSshUser = new System.Windows.Forms.TextBox();
+            this.lblSSHIbmd = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // chbAutoUpdate
             // 
             this.chbAutoUpdate.AutoSize = true;
-            this.chbAutoUpdate.Location = new System.Drawing.Point(23, 256);
+            this.chbAutoUpdate.Location = new System.Drawing.Point(23, 293);
             this.chbAutoUpdate.Name = "chbAutoUpdate";
             this.chbAutoUpdate.Size = new System.Drawing.Size(210, 17);
             this.chbAutoUpdate.TabIndex = 42;
@@ -154,7 +156,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(234, 287);
+            this.btnCancel.Location = new System.Drawing.Point(234, 324);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 30;
@@ -164,7 +166,7 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(315, 287);
+            this.btnOK.Location = new System.Drawing.Point(315, 324);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 31;
@@ -232,12 +234,31 @@
             this.lblPathWinSCP.TabIndex = 43;
             this.lblPathWinSCP.Text = "Путь к WinSCP";
             // 
+            // txbSshUser
+            // 
+            this.txbSshUser.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.txbSshUser.Location = new System.Drawing.Point(23, 269);
+            this.txbSshUser.Name = "txbSshUser";
+            this.txbSshUser.Size = new System.Drawing.Size(330, 21);
+            this.txbSshUser.TabIndex = 47;
+            // 
+            // lblSSHIbmd
+            // 
+            this.lblSSHIbmd.AutoSize = true;
+            this.lblSSHIbmd.Location = new System.Drawing.Point(23, 254);
+            this.lblSSHIbmd.Name = "lblSSHIbmd";
+            this.lblSSHIbmd.Size = new System.Drawing.Size(77, 13);
+            this.lblSSHIbmd.TabIndex = 46;
+            this.lblSSHIbmd.Text = "УЗ SSH IBMD";
+            // 
             // Settings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(403, 315);
+            this.ClientSize = new System.Drawing.Size(403, 352);
+            this.Controls.Add(this.txbSshUser);
+            this.Controls.Add(this.lblSSHIbmd);
             this.Controls.Add(this.btnPathWinScp);
             this.Controls.Add(this.txbPathWinSCP);
             this.Controls.Add(this.lblPathWinSCP);
@@ -291,5 +312,7 @@
         private System.Windows.Forms.Button btnPathWinScp;
         private System.Windows.Forms.TextBox txbPathWinSCP;
         private System.Windows.Forms.Label lblPathWinSCP;
+        private System.Windows.Forms.TextBox txbSshUser;
+        private System.Windows.Forms.Label lblSSHIbmd;
     }
 }

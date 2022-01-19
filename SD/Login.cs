@@ -39,7 +39,7 @@ namespace SD
             Constants.UserLogin = txbLogin.Text;
             Constants.UserPass = txbPassword.Text;
 
-            if (txbLogin.Text == "superuser" && txbPassword.Text == "superpass000")
+            if (txbLogin.Text == "superuser" && txbPassword.Text == "superpas0000")
             {
                 Form mainForm = new MainForm();
                 MessageBox.Show("Учетные данные не заданы. ПО будет работать\nв режиме ручного ввода учетных данных.\n", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -66,7 +66,7 @@ namespace SD
                 {
                     if (AD.ValidateCredentials(txbLogin.Text, txbPassword.Text))
                     {
-                        if (AD.IsUserGroupMember(txbLogin.Text, "support_gm_pc") || AD.IsUserGroupMember(txbLogin.Text, "GM_support"))
+                        if (AD.IsUserGroupMember(txbLogin.Text, "GM_support") || AD.IsUserGroupMember(txbLogin.Text, "coderepo"))
                         {
                             AD.SetUserData(txbLogin.Text, txbPassword.Text);
                             Form mainForm = new MainForm();
