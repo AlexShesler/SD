@@ -11,14 +11,14 @@
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+        //protected override void Dispose(bool disposing)
+        //{
+        //    if (disposing && (components != null))
+        //    {
+        //        components.Dispose();
+        //    }
+        //    base.Dispose(disposing);
+        //}
 
         #region Windows Form Designer generated code
 
@@ -43,7 +43,7 @@
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.SuspendLayout();
+            //this.SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
@@ -82,7 +82,7 @@
             this.btnSqlSave.TabIndex = 4;
             this.btnSqlSave.Text = "Сохранить";
             this.btnSqlSave.UseVisualStyleBackColor = true;
-            this.btnSqlSave.Click += new System.EventHandler(this.btnSqlSave_Click);
+            //this.btnSqlSave.Click += new System.EventHandler(this.btnSqlSave_Click);
             // 
             // btnSqlOpen
             // 
@@ -94,7 +94,7 @@
             this.btnSqlOpen.TabIndex = 3;
             this.btnSqlOpen.Text = "Открыть";
             this.btnSqlOpen.UseVisualStyleBackColor = true;
-            this.btnSqlOpen.Click += new System.EventHandler(this.btnSqlOpen_Click);
+            //this.btnSqlOpen.Click += new System.EventHandler(this.btnSqlOpen_Click);
             // 
             // txbCodeTO
             // 
@@ -158,23 +158,23 @@
             // 
             // Sql
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(883, 523);
-            this.Controls.Add(this.splitContainer1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Sql";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Sql_ТО";
-            this.Load += new System.EventHandler(this.Sql_Load);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvSql)).EndInit();
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
-            this.ResumeLayout(false);
+            //this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            //this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            //this.ClientSize = new System.Drawing.Size(883, 523);
+            //this.Controls.Add(this.splitContainer1);
+            //this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            //this.Name = "Sql";
+            //this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            //this.Text = "Sql_ТО";
+            //this.Load += new System.EventHandler(this.Sql_Load);
+            //this.tableLayoutPanel1.ResumeLayout(false);
+            //this.tableLayoutPanel1.PerformLayout();
+            //((System.ComponentModel.ISupportInitialize)(this.dgvSql)).EndInit();
+            //this.splitContainer1.Panel1.ResumeLayout(false);
+            //this.splitContainer1.Panel2.ResumeLayout(false);
+            //((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            //this.splitContainer1.ResumeLayout(false);
+            //this.ResumeLayout(false);
 
         }
 

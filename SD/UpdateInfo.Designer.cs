@@ -82,6 +82,7 @@
             this.btnCancel.TabIndex = 2;
             this.btnCancel.Text = "Отмена";
             this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnOK
             // 
@@ -92,6 +93,7 @@
             this.btnOK.TabIndex = 2;
             this.btnOK.Text = "Обновить";
             this.btnOK.UseVisualStyleBackColor = true;
+            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // txbVerUpdate
             // 
@@ -125,6 +127,7 @@
             this.ClientSize = new System.Drawing.Size(428, 275);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "UpdateInfo";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "UpdateInfo";
             this.Load += new System.EventHandler(this.UpdateInfo_Load);
             this.tableLayoutPanel1.ResumeLayout(false);

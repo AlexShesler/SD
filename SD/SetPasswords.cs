@@ -30,17 +30,14 @@ namespace SD
         private void btnOK_Click(object sender, EventArgs e)
         {
             //string loginSrvSsh = "smena";
-            if (!File.Exists("LockStorage"))
-            {
-                XmlTextWriter textWritter = new XmlTextWriter("LockStorage", Encoding.UTF8);
-                textWritter.WriteStartDocument();
-                textWritter.Formatting = Formatting.Indented;
-                textWritter.WriteStartElement("data");
-                textWritter.WriteEndElement();
-                textWritter.Close();
-            }
-            else if (File.Exists("LockStorage"))
-                File.Delete("LockStorage");
+            if (File.Exists("LockStorage")) File.Delete("LockStorage");
+
+            XmlTextWriter textWritter = new XmlTextWriter("LockStorage", Encoding.UTF8);
+            textWritter.WriteStartDocument();
+            textWritter.Formatting = Formatting.Indented;
+            textWritter.WriteStartElement("data");
+            textWritter.WriteEndElement();
+            textWritter.Close();           
 
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load("LockStorage");
@@ -96,6 +93,11 @@ namespace SD
             Constants.BdLogin = txbLoginBd.Text;
             Constants.BdLogin = txbPassBd.Text;
 
+            XmlElement sshpass = xmlDoc.CreateElement("SshPass");
+            sshpass.InnerText = txbSSHPass.Text;
+            xmlDoc.DocumentElement.AppendChild(sshpass);
+            Constants.SshPass = txbSSHPass.Text;
+
             xmlDoc.Save("LockStorage");
             Close();
 
@@ -143,5 +145,6 @@ namespace SD
         {
             TopMost = true;
         }
+
     }
 }

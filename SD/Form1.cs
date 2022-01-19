@@ -20,8 +20,10 @@ namespace SD
 {
     public partial class MainForm : Form
     {
+        public static MainForm SelfRef { get; set; }
         public MainForm()
         {
+            SelfRef = this;
             InitializeComponent();
             SetRights();
             ReadConfig();
@@ -30,7 +32,7 @@ namespace SD
             LoadUseful();
             InputLanguage.CurrentInputLanguage = InputLanguage.FromCulture(new CultureInfo("ru-RU"));
             GetAutoUpdate();
-            //LoadComboBox();
+            LoadComboBox();
             SetTopMostForm();            
         }
 
@@ -38,7 +40,7 @@ namespace SD
         string line;
         int prbarCount = 0;
         bool autoupdate;
-        string pathUpdate, pathPutty, pathRms, pathUvnc, upHost, pathWinscp, subnetIp, pathSqlFile;
+        string pathUpdate, pathPutty, pathRms, pathUvnc, upHost, pathWinscp, subnetIp, pathSqlFile, sshuser;
         bool update = false;
         bool topMostForm;
         int[] SrvArr = new int[12] { 1, 2, 3, 5, 6, 7, 18, 250, 253, 254, 93, 141 };
@@ -158,6 +160,11 @@ namespace SD
                 {
                     string[] i = cline.Split('|');
                     Constants.SqlFile = i[1];
+                }
+                if (cline.StartsWith("sshuser"))
+                {
+                    string[] i = cline.Split('|');
+                    sshuser = i[1];
                 }
             }
 
@@ -1049,6 +1056,10 @@ namespace SD
                     Constants.BdLogin = attr.Value;
                     Constants.BdPass = xnode.InnerText;
                 }
+                if (xnode.Name == "SshPass")
+                {
+                    Constants.SshPass = xnode.InnerText;
+                }
             }
         }
 
@@ -1110,12 +1121,12 @@ namespace SD
             try
             {
                 WebClient client = new WebClient() { Proxy = null };
-                if (File.Exists(@"\\" + upHost + @"\Update\Updater.exe"))
-                    client.DownloadFile(@"\\" + upHost + @"\Update\Updater.exe", "Updater.exe");
+                if (File.Exists(@"\\" + upHost + @"\Update$\Updater.exe"))
+                    client.DownloadFile(@"\\" + upHost + @"\Update$\Updater.exe", "Updater.exe");
 
-                if (File.Exists(@"\\" + upHost + @"\Update\version.xml"))
+                if (File.Exists(@"\\" + upHost + @"\Update$\version.xml"))
                 {
-                    client.DownloadFile(@"\\" + upHost + @"\Update\version.xml", "version_new.xml");
+                    client.DownloadFile(@"\\" + upHost + @"\Update$\version.xml", "version_new.xml");
                 }
                 else return;
             }
@@ -2175,7 +2186,7 @@ namespace SD
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            if (Constants.UserLogin != "superuser") GetMode();
+            if (Constants.UserLogin != "superuser1") GetMode();
             CheckUpdate();
         }
 
@@ -2380,48 +2391,63 @@ namespace SD
 
         private void tsbtnSshMM_Click(object sender, EventArgs e)
         {
+            string ssh_username = "root", ssh_pass = txbIbmdPass.Text;
+
             //PuTTY.exe - P 2223 - l root - pw 123456789 OMD_340109.ONLINEMM.CORP.TANDER.RU
             if (IsMmSelected() && (((ToolStripButton)sender).Tag.ToString() != ""))
             {
+                if (chbxUZSSHIBMD.Checked == true)
+                {
+                    ssh_username = sshuser;
+                    ssh_pass = Constants.SshPass;                    
+                }
+
                 if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == false)
                 {
-                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + (((ToolStripButton)sender).Tag.ToString()));
+                    ProcStart(pathPutty, " -ssh -P 2223 -l " + ssh_username + " -pw " + ssh_pass + " " + (((ToolStripButton)sender).Tag.ToString()));
                 }
                 if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == false)
                 {
-                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + lblMainChanelMM.Text);
+                    ProcStart(pathPutty, " -ssh -P 2223 -l " + ssh_username + " -pw " + ssh_pass + " " + lblMainChanelMM.Text);
                 }
                 if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == true)
                 {
-                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + lblReserveChanelMM.Text);
+                    ProcStart(pathPutty, " -ssh -P 2223 -l " + ssh_username + " -pw " + ssh_pass + " " + lblReserveChanelMM.Text);
                 }
                 if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == true)
                 {
-                    ProcStart(pathPutty, " -ssh -P 2223 -l root -pw " + txbIbmdPass.Text + " " + lblReserveChanelMM.Tag.ToString());
+                    ProcStart(pathPutty, " -ssh -P 2223 -l " + ssh_username + " -pw " + ssh_pass + " " + lblReserveChanelMM.Tag.ToString());
                 }
-                
             }
         }
 
         private void tsbtnWinscpMM_Click(object sender, EventArgs e)
         {
+            string ssh_username = "root", ssh_pass = txbIbmdPass.Text;
+
             if (IsMmSelected() && ((ToolStripButton)sender).Tag.ToString() != "")
             {
+                if (chbxUZSSHIBMD.Checked == true)
+                {
+                    ssh_username = sshuser;
+                    ssh_pass = Constants.SshPass;
+                }
+
                 if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == false)
                 {
-                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + (((ToolStripButton)sender).Tag.ToString()) + ":2223");
+                    ProcStart(pathWinscp, ssh_username + ":" + ssh_pass + "@" + (((ToolStripButton)sender).Tag.ToString()) + ":2223");
                 }
                 if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == false)
                 {
-                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + lblMainChanelMM.Text + ":2223");
+                    ProcStart(pathWinscp, ssh_username + ":" + ssh_pass + "@" + lblMainChanelMM.Text + ":2223");
                 }
                 if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == true)
                 {
-                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + lblReserveChanelMM.Text + ":2223");
+                    ProcStart(pathWinscp, ssh_username + ":" + ssh_pass + "@" + lblReserveChanelMM.Text + ":2223");
                 }
                 if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == true)
                 {
-                    ProcStart(pathWinscp, "root:" + txbIbmdPass.Text + "@" + lblReserveChanelMM.Tag.ToString() + ":2223");
+                    ProcStart(pathWinscp, ssh_username + ":" + ssh_pass + "@" + lblReserveChanelMM.Tag.ToString() + ":2223");
                 }
                 
             }
@@ -2691,11 +2717,11 @@ namespace SD
             PingT(((Label)sender).Text);
         }
 
-        private void menuSql_Click(object sender, EventArgs e)
-        {
-            Sql sql_form = new Sql();
-            sql_form.Show();
-        }
+        //private void menuSql_Click(object sender, EventArgs e)
+        //{
+        //    Sql sql_form = new Sql();
+        //    sql_form.Show();
+        //}
 
         private void CbIpGM_SelectionChangeCommitted(object sender, EventArgs e)
         {

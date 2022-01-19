@@ -38,7 +38,7 @@ namespace SD
                 }
                 if (xnode.Name == "whats_new")
                 {
-                    rtbUpdate.Text = xnode.InnerText;
+                    rtbUpdate.AppendText("\n" + xnode.InnerText);
                 }
 
             }

@@ -50,6 +50,9 @@
             this.btnShowPass1 = new System.Windows.Forms.Button();
             this.txbPassUvnc = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.txbSSHPass = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.btnShowPass8 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txbLoginBd
@@ -111,7 +114,7 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(147, 236);
+            this.btnOK.Location = new System.Drawing.Point(138, 276);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 115;
@@ -122,7 +125,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(228, 236);
+            this.btnCancel.Location = new System.Drawing.Point(219, 276);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 116;
@@ -248,11 +251,44 @@
             this.label1.TabIndex = 127;
             this.label1.Text = "Пароль для UVnc при подключении к весам Digi:";
             // 
+            // txbSSHPass
+            // 
+            this.txbSSHPass.Location = new System.Drawing.Point(13, 240);
+            this.txbSSHPass.Name = "txbSSHPass";
+            this.txbSSHPass.PasswordChar = '•';
+            this.txbSSHPass.Size = new System.Drawing.Size(130, 20);
+            this.txbSSHPass.TabIndex = 129;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(10, 224);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(121, 13);
+            this.label4.TabIndex = 130;
+            this.label4.Text = "Пароль для SSH IBMD";
+            // 
+            // btnShowPass8
+            // 
+            this.btnShowPass8.Image = ((System.Drawing.Image)(resources.GetObject("btnShowPass8.Image")));
+            this.btnShowPass8.Location = new System.Drawing.Point(112, 241);
+            this.btnShowPass8.Margin = new System.Windows.Forms.Padding(0);
+            this.btnShowPass8.Name = "btnShowPass8";
+            this.btnShowPass8.Size = new System.Drawing.Size(30, 18);
+            this.btnShowPass8.TabIndex = 131;
+            this.btnShowPass8.Tag = "Uvnc";
+            this.btnShowPass8.UseVisualStyleBackColor = true;
+            this.btnShowPass8.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseDown);
+            this.btnShowPass8.MouseUp += new System.Windows.Forms.MouseEventHandler(this.btnShowPass1_MouseUp);
+            // 
             // SetPasswords
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(332, 266);
+            this.ClientSize = new System.Drawing.Size(311, 304);
+            this.Controls.Add(this.btnShowPass8);
+            this.Controls.Add(this.txbSSHPass);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.txbLoginBd);
             this.Controls.Add(this.btnShowPass7);
             this.Controls.Add(this.txbPassBd);
@@ -275,6 +311,7 @@
             this.Controls.Add(this.txbPassUvnc);
             this.Controls.Add(this.label1);
             this.Name = "SetPasswords";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "SetPasswords";
             this.Load += new System.EventHandler(this.SetPasswords_Load);
             this.ResumeLayout(false);
@@ -305,5 +342,8 @@
         private System.Windows.Forms.Button btnShowPass1;
         private System.Windows.Forms.TextBox txbPassUvnc;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txbSSHPass;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btnShowPass8;
     }
 }
