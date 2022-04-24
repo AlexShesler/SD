@@ -16,6 +16,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Excel = Microsoft.Office.Interop.Excel;
 
+
 namespace SD
 {
     public partial class MainForm : Form
@@ -1117,7 +1118,7 @@ namespace SD
         {
             int versionNew;
             int versionOld;
-
+            //TODO: Переделать под скачивание с GIT
             try
             {
                 WebClient client = new WebClient() { Proxy = null };
@@ -2399,11 +2400,17 @@ namespace SD
                 if (chbxUZSSHIBMD.Checked == true)
                 {
                     ssh_username = sshuser;
-                    ssh_pass = Constants.SshPass;                    
+                    if (Constants.SshPass != "")
+                    {
+                        ssh_pass = Constants.SshPass;
+                    }                                                            
                 }
 
                 if (chbxConnectToIPMM.Checked == false && chbxConnectToIPReservMM.Checked == false)
                 {
+                    string args = " -ssh -P 2223 -l " + ssh_username + " -pw " + ssh_pass + " " + (((ToolStripButton)sender).Tag.ToString());
+                    wright_log(pathPutty);
+                    wright_log(args);
                     ProcStart(pathPutty, " -ssh -P 2223 -l " + ssh_username + " -pw " + ssh_pass + " " + (((ToolStripButton)sender).Tag.ToString()));
                 }
                 if (chbxConnectToIPMM.Checked == true && chbxConnectToIPReservMM.Checked == false)
@@ -2757,6 +2764,24 @@ namespace SD
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Application.Exit();
+        }
+
+        public void wright_log(string mess)
+        {
+            try
+            {
+                using (StreamWriter sw_log = new StreamWriter("log.log", true))
+                {
+                    sw_log.WriteLine(DateTime.Now.ToString() + ": " + mess);
+                    sw_log.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "logging error");
+                return;
+            }
+
         }
     }
 }
